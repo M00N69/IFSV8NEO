@@ -31,6 +31,10 @@ if uploaded_file is not None:
     # Charger et afficher le fichier JSON
     data = load_json(uploaded_file)
     
+    # Afficher l'intégralité du fichier JSON
+    st.subheader('Affichage complet du JSON')
+    st.json(data)
+    
     # Meta information
     st.subheader('Informations générales')
     st.json({
@@ -62,6 +66,7 @@ if uploaded_file is not None:
                 st.write(f"Requirement UUID: {req.get('requirementUuid')}")
                 st.write(f"Score: {req.get('score')}")
                 st.write(f"Explication: {req.get('explanationText', 'Non disponible')}")
+                st.write(f"Autres détails: {json.dumps(req, indent=2)}")  # Afficher tous les détails de l'exigence
                 # Ajouter un commentaire pour chaque exigence
                 comment = st.text_area(f"Ajouter un commentaire pour la requirement {req.get('requirementUuid')}", key=req.get('requirementUuid'))
                 if st.button(f"Enregistrer le commentaire pour {req.get('requirementUuid')}"):
@@ -81,6 +86,7 @@ if uploaded_file is not None:
             st.write(f"Requirement UUID: {nc.get('requirementUuid')}")
             st.write(f"Score: {nc.get('score')}")
             st.write(f"Explication: {nc.get('explanationText', 'Non disponible')}")
+            st.write(f"Autres détails: {json.dumps(nc, indent=2)}")  # Afficher tous les détails de la non-conformité
             # Ajouter un commentaire pour la non-conformité
             comment = st.text_area(f"Ajouter un commentaire pour la requirement {nc.get('requirementUuid')}", key=f"nc_{nc.get('requirementUuid')}")
             comments_to_save[nc.get('requirementUuid')] = comment

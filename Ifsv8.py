@@ -56,7 +56,7 @@ if uploaded_file is not None:
         # Afficher les exigences du chapitre sélectionné
         st.subheader(f"Exigences du chapitre {selected_chapter}")
         checklist = data.get("data", {}).get("modules", {}).get("food_8", {}).get("checklists", {}).get("checklistFood8", {}).get("requirements", [])
-        chapter_requirements = [req for req in checklist if req.get("chapterId") == selected_chapter]
+        chapter_requirements = [req for req in checklist if req.get("chapterId") == str(selected_chapter)]
         if chapter_requirements:
             for req in chapter_requirements:
                 st.write(f"Requirement UUID: {req.get('requirementUuid')}")

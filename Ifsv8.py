@@ -43,15 +43,15 @@ if uploaded_file is not None:
     # Navigation entre les chapitres
     st.subheader('Navigation des chapitres')
     matrix_result = data.get("data", {}).get("modules", {}).get("food_8", {}).get("matrixResult", [])
-    chapter_ids = [chapter.get("chapterId", "") for chapter in matrix_result]
+    chapter_ids = list({chapter.get("chapterId", "") for chapter in matrix_result})  # Utiliser un set pour éliminer les doublons puis convertir en liste
+    chapter_ids.sort()  # Trier les chapitres pour une meilleure lisibilité
     selected_chapter = st.selectbox("Choisissez un chapitre", chapter_ids)
     
     # Afficher le chapitre sélectionné
-    for chapter in matrix_result:
-        if chapter.get("chapterId") == selected_chapter:
-            st.write(f"Chapitre ID: {selected_chapter}")
-            st.json(chapter)
-            break
+    selected_chapter_data = [chapter for chapter in matrix_result if chapter.get("chapterId") == selected_chapter]
+    if selected_chapter_data:
+        st.write(f"Chapitre ID: {selected_chapter}")
+        st.json(selected_chapter_data[0])
 
     # Visualisation des non-conformités
     st.subheader('Non-conformités')

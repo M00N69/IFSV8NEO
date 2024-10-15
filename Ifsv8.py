@@ -31,13 +31,9 @@ if uploaded_file is not None:
     # Charger et afficher le fichier JSON
     data = load_json(uploaded_file)
     
-    # Afficher l'intégralité du fichier JSON
-    st.subheader('Affichage complet du JSON')
-    st.json(data)
-    
-    # Meta information
-    st.subheader('Informations générales')
-    st.json({
+    # Meta information dans une section dédiée
+    st.sidebar.header('Informations générales')
+    st.sidebar.json({
         "hash": data.get("hash"),
         "schemaVersion": data.get("schemaVersion"),
         "axpxVersion": data.get("axpxVersion"),
@@ -45,51 +41,52 @@ if uploaded_file is not None:
     })
 
     # Navigation entre les chapitres
-    st.subheader('Navigation des chapitres')
+    st.header('Navigation des chapitres')
     matrix_result = data.get("data", {}).get("modules", {}).get("food_8", {}).get("matrixResult", [])
     chapter_ids = list({chapter.get("chapterId", "") for chapter in matrix_result})  # Utiliser un set pour éliminer les doublons puis convertir en liste
     chapter_ids.sort()  # Trier les chapitres pour une meilleure lisibilité
     selected_chapter = st.selectbox("Choisissez un chapitre", chapter_ids)
     
-    # Afficher le chapitre sélectionné et ses exigences
+    # Afficher le chapitre sélectionné et ses exigences dans une mise en page plus lisible
     selected_chapter_data = [chapter for chapter in matrix_result if chapter.get("chapterId") == selected_chapter]
     if selected_chapter_data:
+        st.subheader(f"Détails du Chapitre {selected_chapter}")
         st.write(f"Chapitre ID: {selected_chapter}")
         st.json(selected_chapter_data[0])
 
-        # Afficher les exigences du chapitre sélectionné
-        st.subheader(f"Exigences du chapitre {selected_chapter}")
+        # Afficher les exigences du chapitre sélectionné de manière structurée
+        st.subheader(f"Exigences du Chapitre {selected_chapter}")
         checklist = data.get("data", {}).get("modules", {}).get("food_8", {}).get("checklists", {}).get("checklistFood8", {}).get("requirements", [])
         chapter_requirements = [req for req in checklist if req.get("chapterId") == str(selected_chapter)]
         if chapter_requirements:
             for req in chapter_requirements:
-                st.write(f"Requirement UUID: {req.get('requirementUuid')}")
-                st.write(f"Score: {req.get('score')}")
-                st.write(f"Explication: {req.get('explanationText', 'Non disponible')}")
-                st.write(f"Autres détails: {json.dumps(req, indent=2)}")  # Afficher tous les détails de l'exigence
-                # Ajouter un commentaire pour chaque exigence
-                comment = st.text_area(f"Ajouter un commentaire pour la requirement {req.get('requirementUuid')}", key=req.get('requirementUuid'))
-                if st.button(f"Enregistrer le commentaire pour {req.get('requirementUuid')}"):
-                    add_comment({req.get('requirementUuid'): comment})
-                    st.success(f"Commentaire enregistré pour {req.get('requirementUuid')}")
+                with st.expander(f"Exigence {req.get('requirementUuid')}"):
+                    st.write(f"Score: {req.get('score')}")
+                    st.write(f"Explication: {req.get('explanationText', 'Non disponible')}")
+                    st.json(req)  # Afficher tous les détails de l'exigence de manière arborescente
+                    # Ajouter un commentaire pour chaque exigence
+                    comment = st.text_area(f"Ajouter un commentaire pour la requirement {req.get('requirementUuid')}", key=req.get('requirementUuid'))
+                    if st.button(f"Enregistrer le commentaire pour {req.get('requirementUuid')}"):
+                        add_comment({req.get('requirementUuid'): comment})
+                        st.success(f"Commentaire enregistré pour {req.get('requirementUuid')}")
         else:
             st.write("Aucune exigence trouvée pour ce chapitre.")
 
-    # Visualisation des non-conformités
-    st.subheader('Non-conformités')
+    # Visualisation des non-conformités de manière claire
+    st.header('Non-conformités')
     non_conformities = [req for req in checklist if req.get("score") in ["C", "D", "MAJOR", "KO"]]
     
     if non_conformities:
         st.write(f"Nombre de non-conformités: {len(non_conformities)}")
         comments_to_save = {}
         for nc in non_conformities:
-            st.write(f"Requirement UUID: {nc.get('requirementUuid')}")
-            st.write(f"Score: {nc.get('score')}")
-            st.write(f"Explication: {nc.get('explanationText', 'Non disponible')}")
-            st.write(f"Autres détails: {json.dumps(nc, indent=2)}")  # Afficher tous les détails de la non-conformité
-            # Ajouter un commentaire pour la non-conformité
-            comment = st.text_area(f"Ajouter un commentaire pour la requirement {nc.get('requirementUuid')}", key=f"nc_{nc.get('requirementUuid')}")
-            comments_to_save[nc.get('requirementUuid')] = comment
+            with st.expander(f"Non-conformité {nc.get('requirementUuid')}"):
+                st.write(f"Score: {nc.get('score')}")
+                st.write(f"Explication: {nc.get('explanationText', 'Non disponible')}")
+                st.json(nc)  # Afficher tous les détails de la non-conformité
+                # Ajouter un commentaire pour la non-conformité
+                comment = st.text_area(f"Ajouter un commentaire pour la requirement {nc.get('requirementUuid')}", key=f"nc_{nc.get('requirementUuid')}")
+                comments_to_save[nc.get('requirementUuid')] = comment
         
         # Enregistrer tous les commentaires
         if st.button("Enregistrer tous les commentaires de non-conformités"):

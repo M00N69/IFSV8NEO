@@ -89,8 +89,8 @@ if uploaded_file is not None:
     st.header('Non-conformities')
     non_conformities = [req for req in checklist if req.get("score") in ["C", "D", "MAJOR", "KO"]]
 
-    if non_conformities:
-        st.write(f"Number of non-conformities: {len(non_conformities)}")
+    if non-conformities:
+        st.write(f"Number of non-conformities: {len(non-conformities)}")
         comments_to_save = {}
         for nc in non_conformities:
             with st.expander(f"Non-conformity {nc.get('requirementUuid')}"):
@@ -115,4 +115,5 @@ if uploaded_file is not None:
             st.success('JSON file saved successfully!')
         except Exception as e:
             st.error(f"Error saving the file: {e}")
+
 

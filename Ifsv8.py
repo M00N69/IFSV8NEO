@@ -1,119 +1,89 @@
-import streamlit as st
 import json
+import streamlit as st
 
-# Function to load JSON
-def load_json(file):
-    return json.load(file)
+# Load JSON data from uploaded file
+uploaded_file = st.file_uploader("Upload JSON file", type="json")
 
-# Function to save the modified JSON
-def save_json(data, filename):
-    with open(filename, 'w') as f:
-        json.dump(data, f, indent=4)
-
-# Recursive function to explore JSON structure
-def explore_json(data, level=0):
-    if isinstance(data, dict):
-        for key, value in data.items():
-            st.write("  " * level + f"Key: {key}")
-            explore_json(value, level + 1)
-    elif isinstance(data, list):
-        for index, item in enumerate(data):
-            st.write("  " * level + f"Index: {index}")
-            explore_json(item, level + 1)
-    else:
-        st.write("  " * level + f"Value: {data}")
-
-# Main interface
-st.title("Audit IFS Analysis Tool")
-
-uploaded_file = st.file_uploader("Choose an IFS audit file (.json)", type="json")
-
-if uploaded_file is not None:
-    # Load the JSON data
-    data = load_json(uploaded_file)
+if uploaded_file:
+    data = json.load(uploaded_file)
     
-    # Display the full JSON structure for inspection
-    st.header("Full JSON Inspection")
-    with st.expander("View full JSON structure"):
-        explore_json(data)
+    # Extract necessary components
+    overall_result = data['modules']['food_8']['result']['overall']
+    matrix_result = data['modules']['food_8']['matrixResult']
+    checklists = data['modules']['food_8']['checklists']['checklistFood8']['resultScorings']
 
-    # Sidebar for meta information
-    st.sidebar.header('General Information')
-    st.sidebar.json({
-        "hash": data.get("hash"),
-        "schemaVersion": data.get("schemaVersion"),
-        "axpxVersion": data.get("axpxVersion"),
-        "moduleDefinitionVersion": data.get("moduleDefinitionVersion")
-    })
+    # Display Overall Audit Result
+    st.title("Audit Overview")
+    st.write(f"Audit Level: {overall_result['level']}")
+    st.write(f"Audit Passed: {overall_result['passed']}")
+    st.write(f"Audit Percentage: {overall_result['percent']}%")
 
-    # Filter section for chapters and non-conformities
-    st.header('Filter Options')
+    # Sidebar for navigation
+    st.sidebar.title("Audit Sections")
+    section = st.sidebar.radio("Select a section to view", ["Overall Results", "Chapters & Scores", "Requirements & Non-Conformities"])
 
-    # Get modules and food_8 data
-    modules = data.get("data", {}).get("modules", {})
-    food_module = modules.get("food_8", {})
-    matrix_result = food_module.get("matrixResult", [])
+    # Overall Results Section
+    if section == "Overall Results":
+        st.header("Overall Audit Results")
+        st.json(overall_result)
+    
+    # Chapter-wise Results Section
+    elif section == "Chapters & Scores":
+        st.header("Chapter-wise Scores and Compliance")
+        # List available chapters based on matrixResult
+        chapters = [f"Chapter {item['chapterId']}" for item in matrix_result if "chapterId" in item]
+        selected_chapter = st.selectbox("Select a Chapter", chapters)
+        
+        # Display chapter scores
+        chapter_data = [item for item in matrix_result if f"Chapter {item['chapterId']}" == selected_chapter]
+        
+        if chapter_data:
+            st.subheader(f"Scores for {selected_chapter}")
+            st.write(f"Percentage: {chapter_data[0].get('percentage', 'N/A')}%")
+            st.json(chapter_data)
 
-    # Filter chapters by available chapter IDs
-    chapter_ids = list({str(chapter.get("chapterId", "")) for chapter in matrix_result})
-    chapter_ids.sort()
-    selected_chapter = st.selectbox("Select a chapter", chapter_ids)
+        # Filter for scores and compliance
+        if st.checkbox("Show Non-Conformities Only"):
+            non_conformities = [item for item in matrix_result if item.get('scoreId') in ['C', 'D', 'MAJOR', 'KO']]
+            st.write("Non-conformities in selected chapter:")
+            st.json(non_conformities)
 
-    # Display selected chapter details
-    selected_chapter_data = [chapter for chapter in matrix_result if str(chapter.get("chapterId")) == selected_chapter]
-    if selected_chapter_data:
-        st.subheader(f"Details of Chapter {selected_chapter}")
-        st.json(selected_chapter_data[0])
+    # Requirements and Non-conformities Section
+    elif section == "Requirements & Non-Conformities":
+        st.header("Requirements, Scores, and Non-Conformities")
+        
+        # Select requirement based on available IDs in checklists
+        requirement_ids = list(checklists.keys())
+        selected_requirement = st.selectbox("Select a Requirement", requirement_ids)
 
-        # Display the specific requirements for the selected chapter
-        st.subheader(f"Chapter {selected_chapter} Requirements")
-        checklist = food_module.get("checklists", {}).get("checklistFood8", {}).get("requirements", [])
-        chapter_requirements = [req for req in checklist if str(req.get("chapterId")) == selected_chapter]
-        if chapter_requirements:
-            for req in chapter_requirements:
-                with st.expander(f"Requirement {req.get('requirementUuid')}"):
-                    st.write(f"Score: {req.get('score')}")
-                    st.write(f"Explanation: {req.get('explanationText', 'Not available')}")
-                    st.json(req)
-                    # Add comments for each requirement
-                    comment = st.text_area(f"Add a comment for requirement {req.get('requirementUuid')}", key=req.get('requirementUuid'))
-                    if st.button(f"Save comment for {req.get('requirementUuid')}"):
-                        # Here you would normally save the comment
-                        st.success(f"Comment saved for {req.get('requirementUuid')}")
+        # Display details of the selected requirement
+        if selected_requirement:
+            req_data = checklists[selected_requirement]
+            st.subheader(f"Requirement ID: {selected_requirement}")
+            st.write(f"Score: {req_data['score']['label']} ({req_data['score']['value']})")
+            st.write("Explanation:")
+            st.text(req_data['answers']['explanationText'] if req_data['answers']['explanationText'] else "No explanation provided.")
+            
+            # Show non-conformities if any
+            if req_data['isCorrectionRequired']:
+                st.warning("Non-conformity found!")
+                st.write(req_data['answers']['explanationText'])
+
+            # Expand to show additional details
+            with st.expander("Show additional information"):
+                st.write(f"English Explanation: {req_data['answers']['englishExplanationText']}")
+    
+    # Show Data Filters (Non-conformities across all chapters)
+    st.sidebar.subheader("Filter Non-Conformities")
+    show_non_conformities = st.sidebar.checkbox("Show All Non-conformities")
+    
+    if show_non_conformities:
+        st.header("All Non-conformities Across the Audit")
+        all_non_conformities = [item for item in matrix_result if item.get('scoreId') in ['C', 'D', 'MAJOR', 'KO']]
+        if all_non_conformities:
+            st.json(all_non_conformities)
         else:
-            st.write("No requirements found for this chapter.")
-    else:
-        st.write("No details found for the selected chapter.")
+            st.write("No non-conformities found!")
 
-    # Filter and display non-conformities
-    st.header('Non-conformities')
-    non_conformities = [req for req in checklist if req.get("score") in ["C", "D", "MAJOR", "KO"]]
-
-    if non-conformities:
-        st.write(f"Number of non-conformities: {len(non-conformities)}")
-        comments_to_save = {}
-        for nc in non_conformities:
-            with st.expander(f"Non-conformity {nc.get('requirementUuid')}"):
-                st.write(f"Score: {nc.get('score')}")
-                st.write(f"Explanation: {nc.get('explanationText', 'Not available')}")
-                st.json(nc)
-                # Add a comment for non-conformities
-                comment = st.text_area(f"Add a comment for non-conformity {nc.get('requirementUuid')}", key=f"nc_{nc.get('requirementUuid')}")
-                comments_to_save[nc.get('requirementUuid')] = comment
-
-        # Save all non-conformity comments
-        if st.button("Save all non-conformity comments"):
-            # Normally you'd handle the saving logic here
-            st.success("All non-conformity comments have been successfully saved!")
-    else:
-        st.write("No non-conformities found.")
-
-    # Save modifications to the JSON file
-    if st.button('Save modifications'):
-        try:
-            save_json(data, 'modified_audit.json')
-            st.success('JSON file saved successfully!')
-        except Exception as e:
-            st.error(f"Error saving the file: {e}")
 
 

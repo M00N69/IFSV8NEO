@@ -1,4 +1,5 @@
 import json
+import pandas as pd
 import streamlit as st
 
 # Step 1: Upload the JSON file
@@ -8,7 +9,7 @@ if uploaded_file:
     try:
         # Step 2: Load the uploaded JSON file
         data = json.load(uploaded_file)
-        
+
         # Check if the expected 'data' and 'modules' keys exist
         if "data" in data and "modules" in data["data"] and "food_8" in data["data"]["modules"]:
             food_8 = data['data']['modules']['food_8']
@@ -16,8 +17,7 @@ if uploaded_file:
             # Extract data for overall results and matrix
             overall_result = food_8['result']['overall']
             matrix_result = food_8['matrixResult']
-            checklists = food_8['checklists']['checklistFood8']['resultScorings']
-
+            
             # Step 4: Display Overall Audit Results
             st.title("Audit Overview")
             st.write(f"Audit Level: {overall_result['level']}")
@@ -37,29 +37,41 @@ if uploaded_file:
             elif section == "Chapters & Scores":
                 st.header("Chapter-wise Scores and Compliance")
                 
-                # List available chapters based on matrixResult
-                chapters = [f"Chapter {item['chapterId']}" for item in matrix_result if "chapterId" in item]
-                selected_chapter = st.selectbox("Select a Chapter", chapters)
+                # Get unique chapters based on chapterId
+                unique_chapters = sorted(set([item['chapterId'] for item in matrix_result]))
+                selected_chapter = st.selectbox("Select a Chapter", unique_chapters)
 
-                # Display chapter scores
-                chapter_data = [item for item in matrix_result if f"Chapter {item['chapterId']}" == selected_chapter]
-                
+                # Display chapter scores in a polished table format
+                chapter_data = [item for item in matrix_result if item['chapterId'] == selected_chapter]
+
                 if chapter_data:
-                    st.subheader(f"Scores for {selected_chapter}")
-                    st.write(f"Percentage: {chapter_data[0].get('percentage', 'N/A')}%")
-                    st.json(chapter_data)
+                    st.subheader(f"Scores for Chapter {selected_chapter}")
 
-                # Filter for scores and compliance
+                    # Convert the data to a DataFrame for better visualization
+                    df = pd.DataFrame(chapter_data)
+                    
+                    # Select the columns we want to display in the table
+                    df_filtered = df[['type', 'levelId', 'chapterId', 'scoreId', 'count']]
+
+                    # Display the data as a table
+                    st.dataframe(df_filtered)
+
+                # Filter for non-conformities
                 if st.checkbox("Show Non-Conformities Only"):
-                    non_conformities = [item for item in matrix_result if item.get('scoreId') in ['C', 'D', 'MAJOR', 'KO']]
-                    st.write("Non-conformities in selected chapter:")
-                    st.json(non_conformities)
+                    non_conformities = [item for item in matrix_result if item['chapterId'] == selected_chapter and item['scoreId'] in ['C', 'D', 'MAJOR', 'KO']]
+                    if non_conformities:
+                        df_nc = pd.DataFrame(non_conformities)
+                        st.subheader("Non-conformities in the selected chapter:")
+                        st.dataframe(df_nc[['type', 'scoreId', 'count']])
+                    else:
+                        st.write("No non-conformities found in the selected chapter.")
 
             # Requirements and Non-conformities Section
             elif section == "Requirements & Non-Conformities":
                 st.header("Requirements, Scores, and Non-Conformities")
 
-                # Select requirement based on available IDs in checklists
+                # Extract requirements and scores (Assuming this part is structured like the previous part)
+                checklists = food_8['checklists']['checklistFood8']['resultScorings']
                 requirement_ids = list(checklists.keys())
                 selected_requirement = st.selectbox("Select a Requirement", requirement_ids)
 
@@ -88,9 +100,10 @@ if uploaded_file:
                 st.header("All Non-conformities Across the Audit")
                 all_non_conformities = [item for item in matrix_result if item.get('scoreId') in ['C', 'D', 'MAJOR', 'KO']]
                 if all_non_conformities:
-                    st.json(all_non_conformities)
+                    df_all_nc = pd.DataFrame(all_non_conformities)
+                    st.dataframe(df_all_nc[['type', 'levelId', 'chapterId', 'scoreId', 'count']])
                 else:
-                    st.write("No non-conformities found!")
+                    st.write("No non-conformities found across the audit.")
 
         else:
             st.error("The expected 'data', 'modules', or 'food_8' key does not exist in the uploaded JSON.")
@@ -100,6 +113,7 @@ if uploaded_file:
 
 else:
     st.write("Please upload a JSON file to begin.")
+
 
 
 

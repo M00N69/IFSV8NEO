@@ -43,12 +43,12 @@ if uploaded_file is not None:
     # Navigation entre les chapitres
     st.header('Navigation des chapitres')
     matrix_result = data.get("data", {}).get("modules", {}).get("food_8", {}).get("matrixResult", [])
-    chapter_ids = list({chapter.get("chapterId", "") for chapter in matrix_result})  # Utiliser un set pour éliminer les doublons puis convertir en liste
+    chapter_ids = list({str(chapter.get("chapterId", "")) for chapter in matrix_result})  # Utiliser un set pour éliminer les doublons puis convertir en liste
     chapter_ids.sort()  # Trier les chapitres pour une meilleure lisibilité
     selected_chapter = st.selectbox("Choisissez un chapitre", chapter_ids)
     
     # Afficher le chapitre sélectionné et ses exigences dans une mise en page plus lisible
-    selected_chapter_data = [chapter for chapter in matrix_result if chapter.get("chapterId") == selected_chapter]
+    selected_chapter_data = [chapter for chapter in matrix_result if str(chapter.get("chapterId")) == selected_chapter]
     if selected_chapter_data:
         st.subheader(f"Détails du Chapitre {selected_chapter}")
         st.write(f"Chapitre ID: {selected_chapter}")
@@ -57,7 +57,7 @@ if uploaded_file is not None:
         # Afficher les exigences du chapitre sélectionné de manière structurée
         st.subheader(f"Exigences du Chapitre {selected_chapter}")
         checklist = data.get("data", {}).get("modules", {}).get("food_8", {}).get("checklists", {}).get("checklistFood8", {}).get("requirements", [])
-        chapter_requirements = [req for req in checklist if req.get("chapterId") == str(selected_chapter)]
+        chapter_requirements = [req for req in checklist if str(req.get("chapterId")) == selected_chapter]
         if chapter_requirements:
             for req in chapter_requirements:
                 with st.expander(f"Exigence {req.get('requirementUuid')}"):
@@ -71,6 +71,8 @@ if uploaded_file is not None:
                         st.success(f"Commentaire enregistré pour {req.get('requirementUuid')}")
         else:
             st.write("Aucune exigence trouvée pour ce chapitre.")
+    else:
+        st.write("Aucun détail trouvé pour le chapitre sélectionné.")
 
     # Visualisation des non-conformités de manière claire
     st.header('Non-conformités')

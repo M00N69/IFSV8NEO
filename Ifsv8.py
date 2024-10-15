@@ -10,17 +10,18 @@ def save_json(data, filename):
     with open(filename, 'w') as f:
         json.dump(data, f, indent=4)
 
-# Fonction pour ajouter des commentaires dans un fichier séparé
-def add_comment(comment_data, comments_file='comments.json'):
-    try:
-        with open(comments_file, 'r') as f:
-            comments = json.load(f)
-    except FileNotFoundError:
-        comments = {}
-
-    comments.update(comment_data)
-    with open(comments_file, 'w') as f:
-        json.dump(comments, f, indent=4)
+# Fonction récursive pour explorer et afficher la structure complète du JSON
+def explore_json(data, level=0):
+    if isinstance(data, dict):
+        for key, value in data.items():
+            st.write("  " * level + f"Key: {key}")
+            explore_json(value, level + 1)
+    elif isinstance(data, list):
+        for index, item in enumerate(data):
+            st.write("  " * level + f"Index: {index}")
+            explore_json(item, level + 1)
+    else:
+        st.write("  " * level + f"Value: {data}")
 
 # Interface principale
 st.title("Analyse d'Audit IFS")
@@ -30,6 +31,11 @@ uploaded_file = st.file_uploader("Choisissez un fichier IFS (.json)", type="json
 if uploaded_file is not None:
     # Charger et afficher le fichier JSON
     data = load_json(uploaded_file)
+    
+    # Afficher l'intégralité du fichier JSON pour inspection
+    st.header("Inspection complète du fichier JSON")
+    with st.expander("Voir la structure complète du fichier JSON"):
+        explore_json(data)
     
     # Meta information dans une section dédiée
     st.sidebar.header('Informations générales')
@@ -42,7 +48,9 @@ if uploaded_file is not None:
 
     # Navigation entre les chapitres
     st.header('Navigation des chapitres')
-    matrix_result = data.get("data", {}).get("modules", {}).get("food_8", {}).get("matrixResult", [])
+    modules = data.get("data", {}).get("modules", {})
+    food_module = modules.get("food_8", {})
+    matrix_result = food_module.get("matrixResult", [])
     chapter_ids = list({str(chapter.get("chapterId", "")) for chapter in matrix_result})  # Utiliser un set pour éliminer les doublons puis convertir en liste
     chapter_ids.sort()  # Trier les chapitres pour une meilleure lisibilité
     selected_chapter = st.selectbox("Choisissez un chapitre", chapter_ids)
@@ -56,7 +64,7 @@ if uploaded_file is not None:
 
         # Afficher les exigences du chapitre sélectionné de manière structurée
         st.subheader(f"Exigences du Chapitre {selected_chapter}")
-        checklist = data.get("data", {}).get("modules", {}).get("food_8", {}).get("checklists", {}).get("checklistFood8", {}).get("requirements", [])
+        checklist = food_module.get("checklists", {}).get("checklistFood8", {}).get("requirements", [])
         chapter_requirements = [req for req in checklist if str(req.get("chapterId")) == selected_chapter]
         if chapter_requirements:
             for req in chapter_requirements:

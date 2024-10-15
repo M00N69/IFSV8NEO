@@ -21,8 +21,8 @@ local_css()
 @st.cache_data
 def load_checklist(url):
     try:
-        # Try loading the CSV file with the correct encoding
-        return pd.read_csv(url, sep=";", encoding='utf-8', error_bad_lines=False)
+        # Use 'on_bad_lines' instead of the deprecated 'error_bad_lines'
+        return pd.read_csv(url, sep=";", encoding='utf-8', on_bad_lines='skip')
     except pd.errors.ParserError as e:
         st.error(f"Error parsing CSV file: {e}")
         return None

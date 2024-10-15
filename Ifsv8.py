@@ -17,10 +17,15 @@ def local_css():
 # Load custom CSS for line breaks
 local_css()
 
-# Step 1: Load the CSV Checklist from the provided URL
+# Step 1: Load the CSV Checklist from the provided URL with error handling
 @st.cache_data
 def load_checklist(url):
-    return pd.read_csv(url, sep=";")
+    try:
+        # Try loading the CSV file with the correct encoding
+        return pd.read_csv(url, sep=";", encoding='utf-8', error_bad_lines=False)
+    except pd.errors.ParserError as e:
+        st.error(f"Error parsing CSV file: {e}")
+        return None
 
 checklist_url = "https://raw.githubusercontent.com/M00N69/Action-planGroq/main/Guide%20Checklist_IFS%20Food%20V%208%20-%20CHECKLIST.csv"
 checklist_df = load_checklist(checklist_url)

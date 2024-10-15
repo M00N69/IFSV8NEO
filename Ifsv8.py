@@ -23,7 +23,7 @@ def add_comment(comment_data, comments_file='comments.json'):
         json.dump(comments, f, indent=4)
 
 # Interface principale
-st.title('Analyse d'Audit IFS')
+st.title("Analyse d'Audit IFS")
 
 uploaded_file = st.file_uploader("Choisissez un fichier IFS (.json)", type="json")
 

@@ -111,7 +111,11 @@ if uploaded_file and checklist_df is not None:
 
                 # Extract requirements and scores (Assuming this part is structured like the previous part)
                 checklists = food_8['checklists']['checklistFood8']['resultScorings']
-                requirement_ids = list(checklists.keys())
+                
+                # Now link the NUM_REQ from the CSV with the JSON requirement IDs
+                csv_num_reqs = checklist_df["NUM_REQ"].tolist()
+                requirement_ids = list(set(checklists.keys()) & set(csv_num_reqs))
+                
                 selected_requirement = st.selectbox("Select a Requirement (NUM_REQ)", requirement_ids)
 
                 # Display details of the selected requirement
@@ -152,6 +156,7 @@ if uploaded_file and checklist_df is not None:
 
 else:
     st.write("Please upload a JSON file to begin.")
+
 
 
 

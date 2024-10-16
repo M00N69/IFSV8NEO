@@ -21,7 +21,7 @@ local_css()
 @st.cache_data
 def load_checklist(url):
     try:
-        # Use 'on_bad_lines' instead of the deprecated 'error_bad_lines'
+        # Load the CSV file with the necessary encoding and handling of bad lines
         return pd.read_csv(url, sep=";", encoding='utf-8', on_bad_lines='skip')
     except pd.errors.ParserError as e:
         st.error(f"Error parsing CSV file: {e}")
@@ -33,7 +33,7 @@ checklist_df = load_checklist(checklist_url)
 # Step 2: Upload the JSON file
 uploaded_file = st.file_uploader("Upload JSON file", type="json")
 
-if uploaded_file:
+if uploaded_file and checklist_df is not None:
     try:
         # Step 3: Load the uploaded JSON file
         data = json.load(uploaded_file)
@@ -56,21 +56,31 @@ if uploaded_file:
             st.sidebar.title("Audit Sections")
             section = st.sidebar.radio("Select a section to view", ["Overall Results", "Chapters & Scores", "Requirements & Non-Conformities"])
 
-            # Chapter-wise Results Section
+            # Chapter-wise, Section, and Subsection-wise Results Section
             if section == "Chapters & Scores":
-                st.header("Chapter-wise Scores and Compliance")
+                st.header("Chapter, Section, and Subsection-wise Scores and Compliance")
                 
-                # Get unique chapters based on chapterId from the JSON and IFS checklist
-                unique_chapters = sorted(set(checklist_df["CHAPITRE"]))
+                # Get unique chapters, sections, and subsections from the CSV file
+                unique_chapters = sorted(checklist_df["CHAPITRE"].unique())
                 selected_chapter = st.selectbox("Select a Chapter", unique_chapters)
 
-                # Filter the checklist for the selected chapter
-                chapter_requirements = checklist_df[checklist_df["CHAPITRE"] == selected_chapter]
-                st.subheader(f"Requirements for Chapter {selected_chapter}")
-                st.dataframe(chapter_requirements)
+                # Filter sections based on the selected chapter
+                chapter_sections = checklist_df[checklist_df["CHAPITRE"] == selected_chapter]
+                unique_sections = sorted(chapter_sections["SECTION"].unique())
+                selected_section = st.selectbox("Select a Section", unique_sections)
+
+                # Filter subsections based on the selected section
+                section_subsections = chapter_sections[chapter_sections["SECTION"] == selected_section]
+                unique_subsections = sorted(section_subsections["SOUS_SECTION"].unique())
+                selected_subsection = st.selectbox("Select a Subsection", unique_subsections)
+
+                # Display filtered requirements from the checklist
+                filtered_requirements = section_subsections[section_subsections["SOUS_SECTION"] == selected_subsection]
+                st.subheader(f"Requirements for Chapter {selected_chapter}, Section {selected_section}, Subsection {selected_subsection}")
+                st.dataframe(filtered_requirements)
 
                 # Extract corresponding requirements from the JSON based on NUM_REQ from the checklist
-                requirement_ids = chapter_requirements["NUM_REQ"].tolist()
+                requirement_ids = filtered_requirements["NUM_REQ"].tolist()
                 chapter_data = [item for item in matrix_result if item['chapterId'] == str(selected_chapter) and item['scoreId'] in requirement_ids]
 
                 if chapter_data:
@@ -102,7 +112,7 @@ if uploaded_file:
                 # Extract requirements and scores (Assuming this part is structured like the previous part)
                 checklists = food_8['checklists']['checklistFood8']['resultScorings']
                 requirement_ids = list(checklists.keys())
-                selected_requirement = st.selectbox("Select a Requirement", requirement_ids)
+                selected_requirement = st.selectbox("Select a Requirement (NUM_REQ)", requirement_ids)
 
                 # Display details of the selected requirement
                 if selected_requirement:
@@ -142,6 +152,7 @@ if uploaded_file:
 
 else:
     st.write("Please upload a JSON file to begin.")
+
 
 
 

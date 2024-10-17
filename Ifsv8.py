@@ -38,35 +38,46 @@ if uploaded_file and checklist_df is not None:
         # Step 3: Load the uploaded JSON file
         data = json.load(uploaded_file)
 
-        # Extract required fields from the JSON file
+        # Helper function to safely get values from JSON
+        def get_value(path, default="N/A"):
+            keys = path.split('/')
+            value = data
+            try:
+                for key in keys:
+                    value = value[key]
+                return value
+            except KeyError:
+                return default
+
+        # Extract required fields from the JSON file with safe access
         general_info = {
-            "Company Name": data['questions']['companyName']['answer'],
-            "Audit Date": data['questions']['auditLastDay']['answer'],
-            "Audit Type": data['questions']['executionMode']['answer'],
-            "Certificate Issued": data['questions']['certificateIsIssued']['answer'],
-            "Headquarters": data['questions']['headquartersStreetNo']['answer'],
-            "City": data['questions']['headquartersCity']['answer'],
-            "Country": data['questions']['headquartersCountry']['answer'][0],
-            "Telephone": data['questions']['headquartersTelephone']['answer'],
-            "Email": data['questions']['headquartersEmail']['answer'],
-            "Company Website": data['questions']['headquartersWebpage']['answer'],
-            "Certification Body": data['questions']['certificationBodyName']['answer'],
-            "Certification Body Address": data['questions']['certificationBodyAddress']['answer'],
+            "Company Name": get_value('questions/companyName/answer'),
+            "Audit Date": get_value('questions/auditLastDay/answer'),
+            "Audit Type": get_value('questions/executionMode/answer'),
+            "Certificate Issued": get_value('questions/certificateIsIssued/answer'),
+            "Headquarters": get_value('questions/headquartersStreetNo/answer'),
+            "City": get_value('questions/headquartersCity/answer'),
+            "Country": get_value('questions/headquartersCountry/answer/0'),
+            "Telephone": get_value('questions/headquartersTelephone/answer'),
+            "Email": get_value('questions/headquartersEmail/answer'),
+            "Company Website": get_value('questions/headquartersWebpage/answer'),
+            "Certification Body": get_value('questions/certificationBodyName/answer'),
+            "Certification Body Address": get_value('questions/certificationBodyAddress/answer'),
         }
 
         contact_person = {
-            "Contact Person": data['questions']['headquartersContactPersonName']['answer'],
-            "Contact Email": data['questions']['companyEmergencyContactEmail']['answer'],
-            "Emergency Contact Telephone": data['questions']['companyEmergencyContactTelephone']['answer'],
+            "Contact Person": get_value('questions/headquartersContactPersonName/answer'),
+            "Contact Email": get_value('questions/companyEmergencyContactEmail/answer'),
+            "Emergency Contact Telephone": get_value('questions/companyEmergencyContactTelephone/answer'),
         }
 
         technological_scope = {
-            "Technological Scope": data['scopeAuditScopeDescription']['answer'],
-            "Product Groups Description": data['scopeProductGroupsDescription']['answer'],
+            "Technological Scope": get_value('scopeAuditScopeDescription/answer'),
+            "Product Groups Description": get_value('scopeProductGroupsDescription/answer'),
         }
 
         process_info = {
-            "Processes Involved": data['productsProducedProcessesRunning_en']['answer'],
+            "Processes Involved": get_value('productsProducedProcessesRunning_en/answer'),
         }
 
         # Step 4: Display General Information
@@ -90,3 +101,4 @@ if uploaded_file and checklist_df is not None:
 
 else:
     st.write("Please upload a JSON file to begin.")
+

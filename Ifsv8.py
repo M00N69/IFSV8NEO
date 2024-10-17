@@ -38,46 +38,35 @@ if uploaded_file and checklist_df is not None:
         # Step 3: Load the uploaded JSON file
         data = json.load(uploaded_file)
 
-        # Helper function to safely get values from JSON
-        def get_value(path, default="N/A"):
-            keys = path.split('/')
-            value = data
-            try:
-                for key in keys:
-                    value = value[key]
-                return value
-            except KeyError:
-                return default
-
         # Extract required fields from the JSON file with safe access
         general_info = {
-            "Company Name": get_value('questions/companyName/answer'),
-            "Audit Date": get_value('questions/auditLastDay/answer'),
-            "Audit Type": get_value('questions/executionMode/answer'),
-            "Certificate Issued": get_value('questions/certificateIsIssued/answer'),
-            "Headquarters": get_value('questions/headquartersStreetNo/answer'),
-            "City": get_value('questions/headquartersCity/answer'),
-            "Country": get_value('questions/headquartersCountry/answer/0'),
-            "Telephone": get_value('questions/headquartersTelephone/answer'),
-            "Email": get_value('questions/headquartersEmail/answer'),
-            "Company Website": get_value('questions/headquartersWebpage/answer'),
-            "Certification Body": get_value('questions/certificationBodyName/answer'),
-            "Certification Body Address": get_value('questions/certificationBodyAddress/answer'),
+            "Company Name": data['questions'].get('companyName', {}).get('answer', 'N/A'),
+            "Audit Date": data['questions'].get('auditLastDay', {}).get('answer', 'N/A'),
+            "Audit Type": data['questions'].get('executionMode', {}).get('answer', 'N/A'),
+            "Certificate Issued": data['questions'].get('certificateIsIssued', {}).get('answer', 'N/A'),
+            "Headquarters": data['questions'].get('headquartersStreetNo', {}).get('answer', 'N/A'),
+            "City": data['questions'].get('companyCity', {}).get('answer', 'N/A'),
+            "Country": data['questions'].get('headquartersCountry', {}).get('answer', ['N/A'])[0],
+            "Telephone": data['questions'].get('companyTelephone', {}).get('answer', 'N/A'),
+            "Email": data['questions'].get('companyEmail', {}).get('answer', 'N/A'),
+            "Company Website": data['questions'].get('headquartersWebpage', {}).get('answer', 'N/A'),
+            "Certification Body": data['questions'].get('certificationBodyName', {}).get('answer', 'N/A'),
+            "Certification Body Address": data['questions'].get('certificationBodyAddress', {}).get('answer', 'N/A'),
         }
 
         contact_person = {
-            "Contact Person": get_value('questions/headquartersContactPersonName/answer'),
-            "Contact Email": get_value('questions/companyEmergencyContactEmail/answer'),
-            "Emergency Contact Telephone": get_value('questions/companyEmergencyContactTelephone/answer'),
+            "Contact Person": data['questions'].get('headquartersContactPersonName', {}).get('answer', 'N/A'),
+            "Contact Email": data['questions'].get('companyEmergencyContactEmail', {}).get('answer', 'N/A'),
+            "Emergency Contact Telephone": data['questions'].get('companyEmergencyContactTelephone', {}).get('answer', 'N/A'),
         }
 
         technological_scope = {
-            "Technological Scope": get_value('scopeAuditScopeDescription/answer'),
-            "Product Groups Description": get_value('scopeProductGroupsDescription/answer'),
+            "Technological Scope": data['questions'].get('scopeAuditScopeDescription', {}).get('answer', 'N/A'),
+            "Product Groups Description": data['questions'].get('scopeProductGroupsDescription', {}).get('answer', 'N/A'),
         }
 
         process_info = {
-            "Processes Involved": get_value('productsProducedProcessesRunning_en/answer'),
+            "Processes Involved": data['questions'].get('productsProducedProcessesRunning_en', {}).get('answer', 'N/A'),
         }
 
         # Step 4: Display General Information

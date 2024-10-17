@@ -40,33 +40,33 @@ if uploaded_file and checklist_df is not None:
 
         # Extract required fields from the JSON file with safe access
         general_info = {
-            "Company Name": data['questions'].get('companyName', {}).get('answer', 'N/A'),
-            "Audit Date": data['questions'].get('auditLastDay', {}).get('answer', 'N/A'),
-            "Audit Type": data['questions'].get('executionMode', {}).get('answer', 'N/A'),
-            "Certificate Issued": data['questions'].get('certificateIsIssued', {}).get('answer', 'N/A'),
-            "Headquarters": data['questions'].get('headquartersStreetNo', {}).get('answer', 'N/A'),
-            "City": data['questions'].get('companyCity', {}).get('answer', 'N/A'),
-            "Country": data['questions'].get('headquartersCountry', {}).get('answer', ['N/A'])[0],
-            "Telephone": data['questions'].get('companyTelephone', {}).get('answer', 'N/A'),
-            "Email": data['questions'].get('companyEmail', {}).get('answer', 'N/A'),
-            "Company Website": data['questions'].get('headquartersWebpage', {}).get('answer', 'N/A'),
-            "Certification Body": data['questions'].get('certificationBodyName', {}).get('answer', 'N/A'),
-            "Certification Body Address": data['questions'].get('certificationBodyAddress', {}).get('answer', 'N/A'),
+            "Company Name": data.get('questions', {}).get('companyName', {}).get('answer', 'N/A'),
+            "Audit Date": data.get('questions', {}).get('auditLastDay', {}).get('answer', 'N/A'),
+            "Audit Type": data.get('questions', {}).get('executionMode', {}).get('answer', 'N/A'),
+            "Certificate Issued": data.get('questions', {}).get('certificateIsIssued', {}).get('answer', 'N/A'),
+            "Headquarters": data.get('questions', {}).get('headquartersStreetNo', {}).get('answer', 'N/A'),
+            "City": data.get('questions', {}).get('companyCity', {}).get('answer', 'N/A'),
+            "Country": data.get('questions', {}).get('companyCountry', {}).get('answer', ['N/A'])[0],
+            "Telephone": data.get('questions', {}).get('companyTelephone', {}).get('answer', 'N/A'),
+            "Email": data.get('questions', {}).get('companyEmail', {}).get('answer', 'N/A'),
+            "Company Website": data.get('questions', {}).get('headquartersWebpage', {}).get('answer', 'N/A'),
+            "Certification Body": data.get('questions', {}).get('certificationBodyName', {}).get('answer', 'N/A'),
+            "Certification Body Address": data.get('questions', {}).get('certificationBodyAddress', {}).get('answer', 'N/A'),
         }
 
         contact_person = {
-            "Contact Person": data['questions'].get('headquartersContactPersonName', {}).get('answer', 'N/A'),
-            "Contact Email": data['questions'].get('companyEmergencyContactEmail', {}).get('answer', 'N/A'),
-            "Emergency Contact Telephone": data['questions'].get('companyEmergencyContactTelephone', {}).get('answer', 'N/A'),
+            "Contact Person": data.get('questions', {}).get('headquartersContactPersonName', {}).get('answer', 'N/A'),
+            "Contact Email": data.get('questions', {}).get('companyEmergencyContactEmail', {}).get('answer', 'N/A'),
+            "Emergency Contact Telephone": data.get('questions', {}).get('companyEmergencyContactTelephone', {}).get('answer', 'N/A'),
         }
 
         technological_scope = {
-            "Technological Scope": data['questions'].get('scopeAuditScopeDescription', {}).get('answer', 'N/A'),
-            "Product Groups Description": data['questions'].get('scopeProductGroupsDescription', {}).get('answer', 'N/A'),
+            "Technological Scope": data.get('questions', {}).get('scopeAuditScopeDescription', {}).get('answer', 'N/A'),
+            "Product Groups Description": data.get('questions', {}).get('scopeProductGroupsDescription', {}).get('answer', 'N/A'),
         }
 
         process_info = {
-            "Processes Involved": data['questions'].get('productsProducedProcessesRunning_en', {}).get('answer', 'N/A'),
+            "Processes Involved": data.get('questions', {}).get('productsProducedProcessesRunning_en', {}).get('answer', 'N/A'),
         }
 
         # Step 4: Display General Information
@@ -90,4 +90,3 @@ if uploaded_file and checklist_df is not None:
 
 else:
     st.write("Please upload a JSON file to begin.")
-

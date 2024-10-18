@@ -3,11 +3,14 @@ import streamlit as st
 
 # Function to extract nested data safely, handling lists when necessary
 def extract_nested_data(data, keys):
-    """Recursively extract data from a nested dictionary, handling lists."""
+    """Recursively extract data from a nested dictionary, handling lists and keys like 'answer'."""
     try:
         for key in keys:
             if isinstance(data, dict):
                 data = data.get(key, 'N/A')
+                # If the value is still a dictionary with an 'answer' key, extract it
+                if isinstance(data, dict) and 'answer' in data:
+                    data = data.get('answer', 'N/A')
             elif isinstance(data, list) and isinstance(key, int):
                 if key < len(data):
                     data = data[key]
@@ -120,4 +123,5 @@ if uploaded_json_file:
         st.error("Error decoding the JSON file. Please ensure it is in the correct format.")
 else:
     st.write("Please upload a JSON file in .ifs format to proceed.")
+
 

@@ -58,75 +58,53 @@ FIELD_MAPPING = {
     "Préciser les produits à exclure": ["outsourcingInfo", "exclusionsDescription"]
 }
 
-# Apply custom CSS based on user selection
-def apply_css(mode):
-    if mode == "Dark":
-        st.markdown(
-            """
-            <style>
-            body {
-                background-color: #121212;
-                color: white;
-            }
-            .stDataFrame { 
-                background-color: #1E1E1E; 
-                color: white;
-            }
-            .css-1r2k5ly {
-                color: white;
-            }
-            </style>
-            """, unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            """
-            <style>
-            body {
-                background-color: white;
-                color: black;
-            }
-            .stDataFrame { 
-                background-color: white; 
-                color: black;
-            }
-            .css-1r2k5ly {
-                color: black;
-            }
-            </style>
-            """, unsafe_allow_html=True
-        )
+# Custom CSS for the DataFrame display
+def apply_table_css():
+    st.markdown(
+        """
+        <style>
+        .dataframe th, .dataframe td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .dataframe {
+            border: 1px solid #ddd;
+            border-collapse: collapse;
+            width: 100%;
+            background-color: #f9f9f9;
+        }
+        </style>
+        """, unsafe_allow_html=True
+    )
 
-# Step 1: Select Dark or Light Mode
-mode = st.radio("Select Mode", ("Light", "Dark"))
-apply_css(mode)
-
-# Step 2: Upload the JSON (.ifs) file
+# Step 1: Upload the JSON (.ifs) file
 uploaded_json_file = st.file_uploader("Upload JSON (IFS) file", type="ifs")
 
 if uploaded_json_file:
     try:
-        # Step 3: Load the uploaded JSON file
+        # Step 2: Load the uploaded JSON file
         json_data = json.load(uploaded_json_file)
 
         # Show part of the JSON structure for debugging
         st.subheader("Preview of Uploaded JSON Data")
         st.json(json_data)  # Displaying the JSON structure to help debug
 
-        # Step 4: Extract data from JSON based on the predefined mapping
+        # Step 3: Extract data from JSON based on the predefined mapping
         extracted_data = {}
 
         for label, path in FIELD_MAPPING.items():
             extracted_data[label] = extract_nested_data(json_data, path)
 
-        # Step 5: Create a DataFrame from the extracted data
+        # Step 4: Create a DataFrame from the extracted data
         extracted_df = pd.DataFrame(list(extracted_data.items()), columns=["Field", "Value"])
 
-        # Step 6: Display the DataFrame in Streamlit
+        # Step 5: Display the DataFrame in Streamlit with CSS
+        apply_table_css()  # Apply custom table CSS
         st.title("Extracted Data from JSON (IFS)")
         st.write(extracted_df)
 
-        # Step 7: Function to convert DataFrame to Excel format in memory
+        # Step 6: Function to convert DataFrame to Excel format in memory
         def convert_df_to_excel(df):
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -136,7 +114,7 @@ if uploaded_json_file:
         # Convert DataFrame to Excel for download
         excel_data = convert_df_to_excel(extracted_df)
 
-        # Step 8: Provide option to download the extracted data as Excel
+        # Step 7: Provide option to download the extracted data as Excel
         st.download_button(
             label="Download as Excel",
             data=excel_data,
@@ -148,6 +126,7 @@ if uploaded_json_file:
         st.error("Error decoding the JSON file. Please ensure it is in the correct format.")
 else:
     st.write("Please upload a JSON file in .ifs format to proceed.")
+
 
 
 

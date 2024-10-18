@@ -35,28 +35,71 @@ FIELD_MAPPING = {
     
     # 3. Organisation du site
     "Surface couverte de l'entreprise (m²)": ["siteInfo", "productionAreaSize"],
-    "Nombre de batiments": ["siteInfo", "numberOfBuildings"],
-    "Nombre de ligne": ["siteInfo", "numberOfProductionLines"],
+    "Nombre de bâtiments": ["siteInfo", "numberOfBuildings"],
+    "Nombre de lignes de production": ["siteInfo", "numberOfProductionLines"],
     "Nombre d'étages": ["siteInfo", "numberOfFloors"],
     "Nombre maximum d'employés dans l'année, au pic de production": ["siteInfo", "numberOfEmployeesForTimeCalculation"],
     "Langue parlée et écrite sur le site": ["siteInfo", "workingLanguage"],
     
-    # 4. Produits concernes et champ de l'audit
+    # 4. Produits concernés et champ de l'audit
     "Norme souhaitée": ["auditInfo", "previousCertificationStandardVersion"],
     "Périmètre de l'audit": ["auditInfo", "scopeCertificateScopeDescription"],
     "Process et activités": ["auditInfo", "scopeProductGroupsDescription"],
     "Activité saisonnière ? (O/N)": ["auditInfo", "seasonalProduction"],
-    
+
     # Outsourcing and Products
     "Une partie du procédé de fabrication est-elle sous traitée? (OUI/NON)": ["outsourcingInfo", "partlyOutsourcedProcesses"],
-    "Si oui lister les procédés sous-traités": ["outsourcingInfo", "partlyOutsourcedProcessesDescription"],
+    "Si oui, lister les procédés sous-traités": ["outsourcingInfo", "partlyOutsourcedProcessesDescription"],
     "Avez-vous des produits totalement sous-traités? (OUI/NON)": ["outsourcingInfo", "fullyOutsourcedProducts"],
-    "Si oui lister les produits totalement sous-traités": ["outsourcingInfo", "fullyOutsourcedProductsDescription"],
+    "Si oui, lister les produits totalement sous-traités": ["outsourcingInfo", "fullyOutsourcedProductsDescription"],
     "Avez-vous des produits de négoce? (OUI/NON)": ["outsourcingInfo", "tradedProductsBrokerActivity"],
-    "Si oui lister les produits de négoce": ["outsourcingInfo", "tradedProductsBrokerActivityDescription"],
+    "Si oui, lister les produits de négoce": ["outsourcingInfo", "tradedProductsBrokerActivityDescription"],
     "Produits à exclure du champ d'audit (OUI/NON)": ["outsourcingInfo", "exclusions"],
     "Préciser les produits à exclure": ["outsourcingInfo", "exclusionsDescription"]
 }
+
+# Apply custom CSS based on user selection
+def apply_css(mode):
+    if mode == "Dark":
+        st.markdown(
+            """
+            <style>
+            body {
+                background-color: #121212;
+                color: white;
+            }
+            .stDataFrame { 
+                background-color: #1E1E1E; 
+                color: white;
+            }
+            .css-1r2k5ly {
+                color: white;
+            }
+            </style>
+            """, unsafe_allow_html=True
+        )
+    else:
+        st.markdown(
+            """
+            <style>
+            body {
+                background-color: white;
+                color: black;
+            }
+            .stDataFrame { 
+                background-color: white; 
+                color: black;
+            }
+            .css-1r2k5ly {
+                color: black;
+            }
+            </style>
+            """, unsafe_allow_html=True
+        )
+
+# Step 1: Select Dark or Light Mode
+mode = st.radio("Select Mode", ("Light", "Dark"))
+apply_css(mode)
 
 # Step 2: Upload the JSON (.ifs) file
 uploaded_json_file = st.file_uploader("Upload JSON (IFS) file", type="ifs")
@@ -65,6 +108,10 @@ if uploaded_json_file:
     try:
         # Step 3: Load the uploaded JSON file
         json_data = json.load(uploaded_json_file)
+
+        # Show part of the JSON structure for debugging
+        st.subheader("Preview of Uploaded JSON Data")
+        st.json(json_data)  # Displaying the JSON structure to help debug
 
         # Step 4: Extract data from JSON based on the predefined mapping
         extracted_data = {}
@@ -101,5 +148,6 @@ if uploaded_json_file:
         st.error("Error decoding the JSON file. Please ensure it is in the correct format.")
 else:
     st.write("Please upload a JSON file in .ifs format to proceed.")
+
 
 

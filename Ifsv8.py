@@ -63,17 +63,7 @@ FIELD_MAPPING = {
     "Avez-vous des produits de négoce? (OUI/NON)": ["tradedProductsBrokerActivity"],
     "Si oui, lister les produits de négoce": ["tradedProductsBrokerActivityDescription"],
     "Produits à exclure du champ d'audit (OUI/NON)": ["exclusions"],
-    "Préciser les produits à exclure": ["exclusionsDescription"],
-
-    # 5. MODULES AND CHECKLISTS FROM JSON
-    "Audit Type": ["modules", "food_8", "axpxAuditType"],
-    "Audit Completion Status": ["modules", "food_8", "isComplete"],
-    "Audit Result Level": ["modules", "food_8", "result", "level"],
-    "Audit Result Percent": ["modules", "food_8", "result", "percent"],
-    "Audit Passed": ["modules", "food_8", "result", "passed"],
-    "Score Count A for Chapter 1": ["modules", "food_8", "matrixResult", 0, "count"],
-    "Score Count B for Chapter 1": ["modules", "food_8", "matrixResult", 1, "count"],
-    "Checklist Note Example": ["checklists", "d2d48e96-8ada-44ac-8cb0-d09e0fbf9db0", "answers", "note"]
+    "Préciser les produits à exclure": ["exclusionsDescription"]
 }
 
 # Custom CSS for the table
@@ -108,19 +98,6 @@ def display_extracted_data(data_dict):
     table_html += "</tbody></table>"
     st.markdown(table_html, unsafe_allow_html=True)
 
-# Function to display the JSON structure for debugging purposes
-def display_json_structure(json_data, prefix=""):
-    if isinstance(json_data, dict):
-        for key, value in json_data.items():
-            st.write(f"{prefix}{key}")
-            display_json_structure(value, prefix=prefix + "  ")
-    elif isinstance(json_data, list):
-        for i, item in enumerate(json_data):
-            st.write(f"{prefix}[{i}]")
-            display_json_structure(item, prefix=prefix + "  ")
-    else:
-        st.write(f"{prefix}{json_data}")
-
 # Step 1: Upload the JSON (.ifs) file
 uploaded_json_file = st.file_uploader("Upload JSON (IFS) file", type="ifs")
 
@@ -129,18 +106,14 @@ if uploaded_json_file:
         # Step 2: Load the uploaded JSON file
         json_data = json.load(uploaded_json_file)
 
-        # Step 3: Display JSON structure for debugging
-        st.subheader("JSON Structure Preview")
-        display_json_structure(json_data)
-
-        # Step 4: Extract data from JSON based on the predefined mapping
+        # Step 3: Extract data from JSON based on the predefined mapping
         extracted_data = {}
 
         if isinstance(json_data, dict):
             for label, path in FIELD_MAPPING.items():
                 extracted_data[label] = extract_nested_data(json_data, path)
 
-            # Step 5: Display the extracted data as an HTML table
+            # Step 4: Display the extracted data as an HTML table
             st.title("Extracted Data from JSON (IFS)")
             display_extracted_data(extracted_data)
         else:
@@ -152,10 +125,9 @@ else:
     st.write("Please upload a JSON file in .ifs format to proceed.")
 
 # Updates Summary:
-# 1. Enhanced the FIELD_MAPPING to include paths for more complex data from the JSON structure.
-# 2. Improved the extract_nested_data function to handle more deeply nested structures and lists.
-# 3. Added detailed JSON fields related to modules and checklists to improve data extraction and analysis.
-# 4. Display JSON structure for debugging to ensure correct navigation and extraction of JSON data.
+# 1. Updated to filter only explicitly mapped fields based on the provided table.
+# 2. Removed the JSON structure debugging display for a cleaner user experience.
+# 3. Refined the extraction to only include necessary fields mapped in FIELD_MAPPING.
 
 
 

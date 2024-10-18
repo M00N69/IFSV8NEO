@@ -22,7 +22,6 @@ def extract_nested_data(data, keys):
 
 # Full field mapping based on the provided JSON structure
 FIELD_MAPPING = {
-    # 1. INFORMATION SUR L'ENTREPRISE
     "Nom du site à auditer": ["companyName"],
     "N° COID du portail": ["companyCoid"],
     "Code GLN": ["companyGlnNumber"],
@@ -34,24 +33,18 @@ FIELD_MAPPING = {
     "Latitude": ["companyGpsLatitude"],
     "Longitude": ["companyGpsLongitude"],
     "Email": ["companyEmail"],
-    
-    # 2. Organisation de l'entreprise et de l'audit
     "Nom du siège social": ["headquartersName"],
     "Rue (siège social)": ["headquartersStreetNo"],
     "Nom de la ville (siège social)": ["headquartersCity"],
     "Code postal (siège social)": ["headquartersZip"],
     "Pays (siège social)": ["headquartersCountry"],
     "Téléphone (siège social)": ["headquartersTelephone"],
-
-    # 3. ORGANISATION DU SITE
     "Surface couverte de l'entreprise (m²)": ["productionAreaSize"],
     "Nombre de bâtiments": ["numberOfBuildings"],
     "Nombre de lignes de production": ["numberOfProductionLines"],
     "Nombre d'étages": ["numberOfFloors"],
     "Nombre maximum d'employés dans l'année, au pic de production": ["numberOfEmployeesForTimeCalculation"],
     "Langue parlée et écrite sur le site": ["workingLanguage"],
-
-    # 4. PRODUITS CONCERNES ET CHAMP DE L'AUDIT
     "Norme souhaitée": ["previousCertificationStandardVersion"],
     "Périmètre de l'audit": ["scopeCertificateScopeDescription"],
     "Process et activités": ["scopeProductGroupsDescription"],
@@ -105,6 +98,10 @@ if uploaded_json_file:
     try:
         # Step 2: Load the uploaded JSON file
         json_data = json.load(uploaded_json_file)
+        
+        # Debugging: Display the JSON structure
+        st.write("Loaded JSON Data:")
+        st.json(json_data)  # Display the JSON structure for reference
 
         # Step 3: Extract data from JSON based on the predefined mapping
         extracted_data = {}
@@ -123,10 +120,4 @@ if uploaded_json_file:
         st.error("Error decoding the JSON file. Please ensure it is in the correct format.")
 else:
     st.write("Please upload a JSON file in .ifs format to proceed.")
-
-# Updates Summary:
-# 1. Updated to filter only explicitly mapped fields based on the provided table.
-# 2. Removed the JSON structure debugging display for a cleaner user experience.
-# 3. Refined the extraction to only include necessary fields mapped in FIELD_MAPPING.
-
 

@@ -5,10 +5,17 @@ import streamlit as st
 def extract_nested_data(data, keys):
     """Recursively extract data from a nested dictionary, handling lists."""
     try:
-        if isinstance(data, dict):
-            return data.get(keys[0], 'N/A') if len(keys) == 1 else extract_nested_data(data.get(keys[0], {}), keys[1:])
-        elif isinstance(data, list) and isinstance(keys[0], int):
-            return data[keys[0]] if len(keys) == 1 else extract_nested_data(data[keys[0]], keys[1:])
+        for key in keys:
+            if isinstance(data, dict):
+                data = data.get(key, 'N/A')
+            elif isinstance(data, list) and isinstance(key, int):
+                if key < len(data):
+                    data = data[key]
+                else:
+                    return 'N/A'
+            else:
+                return 'N/A'
+        return data
     except (IndexError, KeyError, TypeError):
         return 'N/A'
     return 'N/A'
@@ -56,7 +63,17 @@ FIELD_MAPPING = {
     "Avez-vous des produits de négoce? (OUI/NON)": ["tradedProductsBrokerActivity"],
     "Si oui, lister les produits de négoce": ["tradedProductsBrokerActivityDescription"],
     "Produits à exclure du champ d'audit (OUI/NON)": ["exclusions"],
-    "Préciser les produits à exclure": ["exclusionsDescription"]
+    "Préciser les produits à exclure": ["exclusionsDescription"],
+
+    # 5. MODULES AND CHECKLISTS FROM JSON
+    "Audit Type": ["modules", "food_8", "axpxAuditType"],
+    "Audit Completion Status": ["modules", "food_8", "isComplete"],
+    "Audit Result Level": ["modules", "food_8", "result", "level"],
+    "Audit Result Percent": ["modules", "food_8", "result", "percent"],
+    "Audit Passed": ["modules", "food_8", "result", "passed"],
+    "Score Count A for Chapter 1": ["modules", "food_8", "matrixResult", 0, "count"],
+    "Score Count B for Chapter 1": ["modules", "food_8", "matrixResult", 1, "count"],
+    "Checklist Note Example": ["checklists", "d2d48e96-8ada-44ac-8cb0-d09e0fbf9db0", "answers", "note"]
 }
 
 # Custom CSS for the table
@@ -101,6 +118,8 @@ def display_json_structure(json_data, prefix=""):
         for i, item in enumerate(json_data):
             st.write(f"{prefix}[{i}]")
             display_json_structure(item, prefix=prefix + "  ")
+    else:
+        st.write(f"{prefix}{json_data}")
 
 # Step 1: Upload the JSON (.ifs) file
 uploaded_json_file = st.file_uploader("Upload JSON (IFS) file", type="ifs")
@@ -117,18 +136,15 @@ if uploaded_json_file:
         # Step 4: Extract data from JSON based on the predefined mapping
         extracted_data = {}
 
-        # Assuming the JSON has multiple entries, iterate through each key-value pair
-        for key, value in json_data.items():
-            entry_data = {}
+        if isinstance(json_data, dict):
             for label, path in FIELD_MAPPING.items():
-                entry_data[label] = extract_nested_data(value, path)
-            extracted_data[key] = entry_data
+                extracted_data[label] = extract_nested_data(json_data, path)
 
-        # Step 5: Display the extracted data as an HTML table for each entry
-        st.title("Extracted Data from JSON (IFS)")
-        for key, data in extracted_data.items():
-            st.subheader(f"Entry ID: {key}")
-            display_extracted_data(data)
+            # Step 5: Display the extracted data as an HTML table
+            st.title("Extracted Data from JSON (IFS)")
+            display_extracted_data(extracted_data)
+        else:
+            st.error("Unexpected JSON structure. Please ensure the uploaded file has the correct format.")
 
     except json.JSONDecodeError:
         st.error("Error decoding the JSON file. Please ensure it is in the correct format.")
@@ -136,13 +152,10 @@ else:
     st.write("Please upload a JSON file in .ifs format to proceed.")
 
 # Updates Summary:
-# 1. Expanded FIELD_MAPPING: The FIELD_MAPPING has been updated to include all relevant fields as per the provided image.
-# 2. Added JSON Structure Preview: Added a function to display the JSON structure to help with debugging and identifying correct paths.
-# 3. Updated Nested Keys for Extraction: The extract_nested_data function was retained and used to match the updated paths.
-# 4. The updated FIELD_MAPPING keys now accurately reflect the structure of the JSON data, ensuring proper extraction of the required fields.
-# 5. Code includes detailed comments explaining the function of each section and how the nested extraction works.
-# 6. Iteration over Entries: The code now iterates over each entry in the JSON to extract relevant data.
-
+# 1. Enhanced the FIELD_MAPPING to include paths for more complex data from the JSON structure.
+# 2. Improved the extract_nested_data function to handle more deeply nested structures and lists.
+# 3. Added detailed JSON fields related to modules and checklists to improve data extraction and analysis.
+# 4. Display JSON structure for debugging to ensure correct navigation and extraction of JSON data.
 
 
 

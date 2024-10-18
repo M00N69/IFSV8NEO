@@ -99,7 +99,7 @@ if uploaded_json_file:
         # Step 8: Function to convert DataFrame to Excel format in memory
         def convert_df_to_excel(df):
             output = BytesIO()
-            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 df.to_excel(writer, index=False)
             processed_data = output.getvalue()
             return processed_data
@@ -119,4 +119,5 @@ if uploaded_json_file:
         st.error("Error decoding the JSON file. Please ensure it is in the correct format.")
 else:
     st.write("Please upload a JSON file in .ifs format to proceed.")
+
 

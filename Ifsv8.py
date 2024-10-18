@@ -8,54 +8,57 @@ def extract_nested_data(data, keys):
     """Recursively extract data from a nested dictionary"""
     if isinstance(data, dict):
         return data.get(keys[0], 'N/A') if len(keys) == 1 else extract_nested_data(data.get(keys[0], {}), keys[1:])
+    elif isinstance(data, list) and isinstance(keys[0], int):
+        return data[keys[0]] if len(keys) == 1 else extract_nested_data(data[keys[0]], keys[1:])
     return 'N/A'
 
 # Full field mapping based on the provided structure
 FIELD_MAPPING = {
-    # 1. Information sur l'entreprise
-    "Nom du site à auditer": ["companyInfo", "companyName"],
-    "N° COID du portail": ["companyInfo", "companyCoid"],
-    "Code GLN": ["companyInfo", "companyGlnNumber"],
-    "Rue": ["companyInfo", "companyStreetNo"],
-    "Code postal": ["companyInfo", "companyZip"],
-    "Nom de la ville": ["companyInfo", "companyCity"],
-    "Pays": ["companyInfo", "companyCountry"],
-    "Téléphone": ["companyInfo", "companyTelephone"],
-    "Latitude": ["companyInfo", "companyGpsLatitude"],
-    "Longitude": ["companyInfo", "companyGpsLongitude"],
-    "Email": ["companyInfo", "companyEmail"],
+    # 1. Information sur l'entreprise (with "answer" field included)
+    "Nom du site à auditer": ["companyInfo", "companyName", "answer"],
+    "N° COID du portail": ["companyInfo", "companyCoid", "answer"],
+    "Code GLN": ["companyInfo", "companyGlnNumber", "answer"],
+    "Rue": ["companyInfo", "companyStreetNo", "answer"],
+    "Code postal": ["companyInfo", "companyZip", "answer"],
+    "Nom de la ville": ["companyInfo", "companyCity", "answer"],
+    "Pays": ["companyInfo", "companyCountry", "answer"],
+    "Téléphone": ["companyInfo", "companyTelephone", "answer"],
+    "Latitude": ["companyInfo", "companyGpsLatitude", "answer"],
+    "Longitude": ["companyInfo", "companyGpsLongitude", "answer"],
+    "Email": ["companyInfo", "companyEmail", "answer"],
+    "Site internet": ["companyInfo", "companyWebpage", "answer"],
 
     # 2. Organisation de l'entreprise et de l'audit
-    "Nom du siège social": ["headquarters", "headquartersName"],
-    "Rue (siège social)": ["headquarters", "headquartersStreetNo"],
-    "Nom de la ville (siège social)": ["headquarters", "headquartersCity"],
-    "Code postal (siège social)": ["headquarters", "headquartersZip"],
-    "Pays (siège social)": ["headquarters", "headquartersCountry"],
-    "Téléphone (siège social)": ["headquarters", "headquartersTelephone"],
+    "Nom du siège social": ["headquarters", "headquartersName", "answer"],
+    "Rue (siège social)": ["headquarters", "headquartersStreetNo", "answer"],
+    "Nom de la ville (siège social)": ["headquarters", "headquartersCity", "answer"],
+    "Code postal (siège social)": ["headquarters", "headquartersZip", "answer"],
+    "Pays (siège social)": ["headquarters", "headquartersCountry", "answer"],
+    "Téléphone (siège social)": ["headquarters", "headquartersTelephone", "answer"],
     
     # 3. Organisation du site
-    "Surface couverte de l'entreprise (m²)": ["siteInfo", "productionAreaSize"],
-    "Nombre de bâtiments": ["siteInfo", "numberOfBuildings"],
-    "Nombre de lignes de production": ["siteInfo", "numberOfProductionLines"],
-    "Nombre d'étages": ["siteInfo", "numberOfFloors"],
-    "Nombre maximum d'employés dans l'année, au pic de production": ["siteInfo", "numberOfEmployeesForTimeCalculation"],
-    "Langue parlée et écrite sur le site": ["siteInfo", "workingLanguage"],
+    "Surface couverte de l'entreprise (m²)": ["siteInfo", "productionAreaSize", "answer"],
+    "Nombre de bâtiments": ["siteInfo", "numberOfBuildings", "answer"],
+    "Nombre de lignes de production": ["siteInfo", "numberOfProductionLines", "answer"],
+    "Nombre d'étages": ["siteInfo", "numberOfFloors", "answer"],
+    "Nombre maximum d'employés dans l'année, au pic de production": ["siteInfo", "numberOfEmployeesForTimeCalculation", "answer"],
+    "Langue parlée et écrite sur le site": ["siteInfo", "workingLanguage", "answer"],
     
     # 4. Produits concernés et champ de l'audit
-    "Norme souhaitée": ["auditInfo", "previousCertificationStandardVersion"],
-    "Périmètre de l'audit": ["auditInfo", "scopeCertificateScopeDescription"],
-    "Process et activités": ["auditInfo", "scopeProductGroupsDescription"],
-    "Activité saisonnière ? (O/N)": ["auditInfo", "seasonalProduction"],
+    "Norme souhaitée": ["auditInfo", "previousCertificationStandardVersion", "answer"],
+    "Périmètre de l'audit": ["auditInfo", "scopeCertificateScopeDescription", "answer"],
+    "Process et activités": ["auditInfo", "scopeProductGroupsDescription", "answer"],
+    "Activité saisonnière ? (O/N)": ["auditInfo", "seasonalProduction", "answer"],
 
     # Outsourcing and Products
-    "Une partie du procédé de fabrication est-elle sous traitée? (OUI/NON)": ["outsourcingInfo", "partlyOutsourcedProcesses"],
-    "Si oui, lister les procédés sous-traités": ["outsourcingInfo", "partlyOutsourcedProcessesDescription"],
-    "Avez-vous des produits totalement sous-traités? (OUI/NON)": ["outsourcingInfo", "fullyOutsourcedProducts"],
-    "Si oui, lister les produits totalement sous-traités": ["outsourcingInfo", "fullyOutsourcedProductsDescription"],
-    "Avez-vous des produits de négoce? (OUI/NON)": ["outsourcingInfo", "tradedProductsBrokerActivity"],
-    "Si oui, lister les produits de négoce": ["outsourcingInfo", "tradedProductsBrokerActivityDescription"],
-    "Produits à exclure du champ d'audit (OUI/NON)": ["outsourcingInfo", "exclusions"],
-    "Préciser les produits à exclure": ["outsourcingInfo", "exclusionsDescription"]
+    "Une partie du procédé de fabrication est-elle sous traitée? (OUI/NON)": ["outsourcingInfo", "partlyOutsourcedProcesses", "answer"],
+    "Si oui, lister les procédés sous-traités": ["outsourcingInfo", "partlyOutsourcedProcessesDescription", "answer"],
+    "Avez-vous des produits totalement sous-traités? (OUI/NON)": ["outsourcingInfo", "fullyOutsourcedProducts", "answer"],
+    "Si oui, lister les produits totalement sous-traités": ["outsourcingInfo", "fullyOutsourcedProductsDescription", "answer"],
+    "Avez-vous des produits de négoce? (OUI/NON)": ["outsourcingInfo", "tradedProductsBrokerActivity", "answer"],
+    "Si oui, lister les produits de négoce": ["outsourcingInfo", "tradedProductsBrokerActivityDescription", "answer"],
+    "Produits à exclure du champ d'audit (OUI/NON)": ["outsourcingInfo", "exclusions", "answer"],
+    "Préciser les produits à exclure": ["outsourcingInfo", "exclusionsDescription", "answer"]
 }
 
 # Custom CSS for the DataFrame display

@@ -2,91 +2,61 @@ import json
 import pandas as pd
 import streamlit as st
 
-# Custom CSS for enabling line breaks in table cells
-def local_css():
-    st.markdown(
-        """
-        <style>
-        .dataframe td {
-            white-space: pre-wrap;
-        }
-        </style>
-        """, unsafe_allow_html=True
-    )
-
-# Load custom CSS for line breaks
-local_css()
-
-# Step 1: Load the CSV Checklist from the provided URL with error handling
+# Step 1: Function to read the Excel file and create the field mapping
 @st.cache_data
-def load_checklist(url):
+def load_excel_mapping(file):
     try:
-        # Load the CSV file with the necessary encoding and handling of bad lines
-        return pd.read_csv(url, sep=";", encoding='utf-8', on_bad_lines='skip')
-    except pd.errors.ParserError as e:
-        st.error(f"Error parsing CSV file: {e}")
+        df = pd.read_excel(file, sheet_name=0)
+        # Assuming first column has labels and second column has JSON keys
+        field_mapping = dict(zip(df.iloc[:, 0], df.iloc[:, 1]))
+        return field_mapping
+    except Exception as e:
+        st.error(f"Error loading Excel file: {e}")
         return None
 
-checklist_url = "https://raw.githubusercontent.com/M00N69/Action-planGroq/main/Guide%20Checklist_IFS%20Food%20V%208%20-%20CHECKLIST.csv"
-checklist_df = load_checklist(checklist_url)
+# Step 2: Upload JSON (.ifs) and Excel files
+uploaded_json_file = st.file_uploader("Upload JSON (IFS) file", type="ifs")
+uploaded_excel_file = st.file_uploader("Upload Excel mapping file", type="xlsx")
 
-# Step 2: Upload the JSON file
-uploaded_file = st.file_uploader("Upload JSON file", type="json")
-
-if uploaded_file and checklist_df is not None:
+if uploaded_json_file and uploaded_excel_file:
     try:
-        # Step 3: Load the uploaded JSON file
-        data = json.load(uploaded_file)
+        # Step 3: Load the JSON data
+        json_data = json.load(uploaded_json_file)
+        
+        # Step 4: Load the Excel field mapping
+        field_mapping = load_excel_mapping(uploaded_excel_file)
 
-        # Extract required fields from the JSON file with safe access
-        general_info = {
-            "Company Name": data.get('questions', {}).get('companyName', {}).get('answer', 'N/A'),
-            "Audit Date": data.get('questions', {}).get('auditLastDay', {}).get('answer', 'N/A'),
-            "Audit Type": data.get('questions', {}).get('executionMode', {}).get('answer', 'N/A'),
-            "Certificate Issued": data.get('questions', {}).get('certificateIsIssued', {}).get('answer', 'N/A'),
-            "Headquarters": data.get('questions', {}).get('headquartersStreetNo', {}).get('answer', 'N/A'),
-            "City": data.get('questions', {}).get('companyCity', {}).get('answer', 'N/A'),
-            "Country": data.get('questions', {}).get('companyCountry', {}).get('answer', ['N/A'])[0],
-            "Telephone": data.get('questions', {}).get('companyTelephone', {}).get('answer', 'N/A'),
-            "Email": data.get('questions', {}).get('companyEmail', {}).get('answer', 'N/A'),
-            "Company Website": data.get('questions', {}).get('headquartersWebpage', {}).get('answer', 'N/A'),
-            "Certification Body": data.get('questions', {}).get('certificationBodyName', {}).get('answer', 'N/A'),
-            "Certification Body Address": data.get('questions', {}).get('certificationBodyAddress', {}).get('answer', 'N/A'),
-        }
+        if field_mapping:
+            extracted_data = {}
 
-        contact_person = {
-            "Contact Person": data.get('questions', {}).get('headquartersContactPersonName', {}).get('answer', 'N/A'),
-            "Contact Email": data.get('questions', {}).get('companyEmergencyContactEmail', {}).get('answer', 'N/A'),
-            "Emergency Contact Telephone": data.get('questions', {}).get('companyEmergencyContactTelephone', {}).get('answer', 'N/A'),
-        }
+            # Step 5: Extract data from JSON based on the Excel mapping
+            for label, json_key in field_mapping.items():
+                if json_key and json_key in json_data.get('questions', {}):
+                    extracted_data[label] = json_data['questions'].get(json_key, {}).get('answer', 'N/A')
+                else:
+                    extracted_data[label] = 'N/A'
 
-        technological_scope = {
-            "Technological Scope": data.get('questions', {}).get('scopeAuditScopeDescription', {}).get('answer', 'N/A'),
-            "Product Groups Description": data.get('questions', {}).get('scopeProductGroupsDescription', {}).get('answer', 'N/A'),
-        }
+            # Step 6: Create a DataFrame from the extracted data
+            extracted_df = pd.DataFrame(list(extracted_data.items()), columns=["Field", "Value"])
+            
+            # Step 7: Display the DataFrame in Streamlit
+            st.title("Extracted Data")
+            st.write(extracted_df)
 
-        process_info = {
-            "Processes Involved": data.get('questions', {}).get('productsProducedProcessesRunning_en', {}).get('answer', 'N/A'),
-        }
+            # Step 8: Provide option to download the extracted data as Excel
+            def convert_df_to_excel(df):
+                return df.to_excel(index=False, engine='xlsxwriter')
 
-        # Step 4: Display General Information
-        st.title("General Site Information")
-        st.write(pd.DataFrame(general_info.items(), columns=['Field', 'Information']))
-
-        # Step 5: Display Contact Information
-        st.title("Contact Person Information")
-        st.write(pd.DataFrame(contact_person.items(), columns=['Field', 'Information']))
-
-        # Step 6: Display Technological Scopes
-        st.title("Technological Scope")
-        st.write(pd.DataFrame(technological_scope.items(), columns=['Field', 'Description']))
-
-        # Step 7: Display Processes Information
-        st.title("Processes Involved")
-        st.write(pd.DataFrame(process_info.items(), columns=['Field', 'Details']))
+            excel_data = convert_df_to_excel(extracted_df)
+            st.download_button(
+                label="Download as Excel",
+                data=excel_data,
+                file_name="extracted_data.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
 
     except json.JSONDecodeError:
-        st.error("The file could not be decoded as a JSON. Please check the file format.")
-
+        st.error("Error decoding the JSON file. Please ensure it is in the correct format.")
 else:
-    st.write("Please upload a JSON file to begin.")
+    st.write("Please upload both the JSON (IFS) file and the Excel mapping file to proceed.")
+

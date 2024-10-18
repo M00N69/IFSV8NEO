@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import streamlit as st
+from io import BytesIO
 
 # Step 1: Hardcoded JSON field mapping based on your updated information
 FIELD_MAPPING = {
@@ -44,15 +45,37 @@ FIELD_MAPPING = {
     "Préciser les produits à exclure": "exclusionsDescription"
 }
 
-# Step 2: Upload the JSON (.ifs) file
+# Step 2: Function to add custom CSS for DataFrame styling
+def local_css():
+    st.markdown(
+        """
+        <style>
+        .dataframe {
+            border: 1px solid #ddd;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .dataframe td, .dataframe th {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .dataframe th {
+            background-color: #f2f2f2;
+        }
+        </style>
+        """, unsafe_allow_html=True
+    )
+
+# Step 3: Upload the JSON (.ifs) file
 uploaded_json_file = st.file_uploader("Upload JSON (IFS) file", type="ifs")
 
 if uploaded_json_file:
     try:
-        # Step 3: Load the uploaded JSON file
+        # Step 4: Load the uploaded JSON file
         json_data = json.load(uploaded_json_file)
         
-        # Step 4: Extract data from JSON based on the predefined mapping
+        # Step 5: Extract data from JSON based on the predefined mapping
         extracted_data = {}
         
         for label, json_key in FIELD_MAPPING.items():
@@ -62,19 +85,29 @@ if uploaded_json_file:
             else:
                 extracted_data[label] = 'N/A'  # No mapping available
 
-        # Step 5: Create a DataFrame from the extracted data
+        # Filter out any fields with 'N/A'
+        extracted_data = {k: v for k, v in extracted_data.items() if v != 'N/A'}
+
+        # Step 6: Create a DataFrame from the extracted data
         extracted_df = pd.DataFrame(list(extracted_data.items()), columns=["Field", "Value"])
-        
-        # Step 6: Display the DataFrame in Streamlit
+
+        # Step 7: Apply CSS styling to the DataFrame
+        local_css()
         st.title("Extracted Data from JSON (IFS)")
-        st.write(extracted_df)
+        st.write(extracted_df.to_html(index=False), unsafe_allow_html=True)
 
-        # Step 7: Provide option to download the extracted data as Excel
+        # Step 8: Function to convert DataFrame to Excel format in memory
         def convert_df_to_excel(df):
-            return df.to_excel(index=False, engine='xlsxwriter')
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, index=False)
+            processed_data = output.getvalue()
+            return processed_data
 
-        # Convert to Excel
+        # Convert DataFrame to Excel for download
         excel_data = convert_df_to_excel(extracted_df)
+        
+        # Step 9: Provide option to download the extracted data as Excel
         st.download_button(
             label="Download as Excel",
             data=excel_data,
@@ -86,3 +119,4 @@ if uploaded_json_file:
         st.error("Error decoding the JSON file. Please ensure it is in the correct format.")
 else:
     st.write("Please upload a JSON file in .ifs format to proceed.")
+

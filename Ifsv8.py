@@ -3,46 +3,59 @@ import pandas as pd
 import streamlit as st
 from io import BytesIO
 
-# Step 1: Hardcoded JSON field mapping based on your updated information
+# Function to extract nested data safely
+def extract_nested_data(data, keys):
+    """Recursively extract data from a nested dictionary"""
+    if isinstance(data, dict):
+        return data.get(keys[0], 'N/A') if len(keys) == 1 else extract_nested_data(data.get(keys[0], {}), keys[1:])
+    return 'N/A'
+
+# Full field mapping based on the provided structure
 FIELD_MAPPING = {
-    "Nom du site à auditer": "companyName",
-    "Statut légal": "",  # No mapping available
-    "Site internet": "",  # No mapping available
-    "N° SIRET": "",  # No mapping available
-    "N° COID du portail (si applicable)": "companyCoid",
-    "Code GLN": "companyGlnNumber",
-    "Rue": "companyStreetNo",
-    "Code postal": "companyZip",
-    "Nom de la ville": "companyCity",
-    "Pays": "companyCountry",
-    "Téléphone": "companyTelephone",
-    "Coordonnées GPS du site à évaluer (Latitude)": "companyGpsLatitude",
-    "Coordonnées GPS du site à évaluer (Longitude)": "companyGpsLongitude",
-    "Email": "companyEmail",
-    "Nom du siège social": "headquartersName",
-    "Rue (siège social)": "headquartersStreetNo",
-    "Nom de la ville (siège social)": "headquartersCity",
-    "Code postal (siège social)": "headquartersZip",
-    "Pays (siège social)": "headquartersCountry",
-    "Téléphone (siège social)": "headquartersTelephone",
-    "Surface couverte de l'entreprise (m²) - Totale": "productionAreaSize",
-    "Nombre de batiments": "numberOfBuildings",
-    "Nombre de ligne": "numberOfProductionLines",
-    "Nombre d'étages": "numberOfFloors",
-    "Nombre maximum d'employés dans l'année, au pic de production": "numberOfEmployeesForTimeCalculation",
-    "Langue parlée et écrite sur le site": "workingLanguage",
-    "Norme souhaitée": "previousCertificationStandardVersion",
-    "Périmètre de l'audit": "scopeCertificateScopeDescription",
-    "Process et activités": "scopeProductGroupsDescription",
-    "Activité saisonnière ? (O/N)": "seasonalProduction",
-    "Une partie du procédé de fabrication est-elle sous traitée? (OUI/NON)": "partlyOutsourcedProcesses",
-    "Si oui, lister les procédés sous-traités": "partlyOutsourcedProcessesDescription",
-    "Avez-vous des produits totalement sous-traités? (OUI/NON)": "fullyOutsourcedProducts",
-    "Si oui, lister les produits totalement sous-traités": "fullyOutsourcedProductsDescription",
-    "Avez-vous des produits de négoce? (OUI/NON)": "tradedProductsBrokerActivity",
-    "Si oui, lister les produits de négoce": "tradedProductsBrokerActivityDescription",
-    "Produits à exclure du champ d'audit (OUI/NON)": "exclusions",
-    "Préciser les produits à exclure": "exclusionsDescription"
+    # 1. Information sur l'entreprise
+    "Nom du site à auditer": ["companyInfo", "companyName"],
+    "N° COID du portail": ["companyInfo", "companyCoid"],
+    "Code GLN": ["companyInfo", "companyGlnNumber"],
+    "Rue": ["companyInfo", "companyStreetNo"],
+    "Code postal": ["companyInfo", "companyZip"],
+    "Nom de la ville": ["companyInfo", "companyCity"],
+    "Pays": ["companyInfo", "companyCountry"],
+    "Téléphone": ["companyInfo", "companyTelephone"],
+    "Latitude": ["companyInfo", "companyGpsLatitude"],
+    "Longitude": ["companyInfo", "companyGpsLongitude"],
+    "Email": ["companyInfo", "companyEmail"],
+
+    # 2. Organisation de l'entreprise et de l'audit
+    "Nom du siège social": ["headquarters", "headquartersName"],
+    "Rue (siège social)": ["headquarters", "headquartersStreetNo"],
+    "Nom de la ville (siège social)": ["headquarters", "headquartersCity"],
+    "Code postal (siège social)": ["headquarters", "headquartersZip"],
+    "Pays (siège social)": ["headquarters", "headquartersCountry"],
+    "Téléphone (siège social)": ["headquarters", "headquartersTelephone"],
+    
+    # 3. Organisation du site
+    "Surface couverte de l'entreprise (m²)": ["siteInfo", "productionAreaSize"],
+    "Nombre de batiments": ["siteInfo", "numberOfBuildings"],
+    "Nombre de ligne": ["siteInfo", "numberOfProductionLines"],
+    "Nombre d'étages": ["siteInfo", "numberOfFloors"],
+    "Nombre maximum d'employés dans l'année, au pic de production": ["siteInfo", "numberOfEmployeesForTimeCalculation"],
+    "Langue parlée et écrite sur le site": ["siteInfo", "workingLanguage"],
+    
+    # 4. Produits concernes et champ de l'audit
+    "Norme souhaitée": ["auditInfo", "previousCertificationStandardVersion"],
+    "Périmètre de l'audit": ["auditInfo", "scopeCertificateScopeDescription"],
+    "Process et activités": ["auditInfo", "scopeProductGroupsDescription"],
+    "Activité saisonnière ? (O/N)": ["auditInfo", "seasonalProduction"],
+    
+    # Outsourcing and Products
+    "Une partie du procédé de fabrication est-elle sous traitée? (OUI/NON)": ["outsourcingInfo", "partlyOutsourcedProcesses"],
+    "Si oui lister les procédés sous-traités": ["outsourcingInfo", "partlyOutsourcedProcessesDescription"],
+    "Avez-vous des produits totalement sous-traités? (OUI/NON)": ["outsourcingInfo", "fullyOutsourcedProducts"],
+    "Si oui lister les produits totalement sous-traités": ["outsourcingInfo", "fullyOutsourcedProductsDescription"],
+    "Avez-vous des produits de négoce? (OUI/NON)": ["outsourcingInfo", "tradedProductsBrokerActivity"],
+    "Si oui lister les produits de négoce": ["outsourcingInfo", "tradedProductsBrokerActivityDescription"],
+    "Produits à exclure du champ d'audit (OUI/NON)": ["outsourcingInfo", "exclusions"],
+    "Préciser les produits à exclure": ["outsourcingInfo", "exclusionsDescription"]
 }
 
 # Step 2: Upload the JSON (.ifs) file
@@ -50,32 +63,39 @@ uploaded_json_file = st.file_uploader("Upload JSON (IFS) file", type="ifs")
 
 if uploaded_json_file:
     try:
-        # Step 3: Load the uploaded JSON file and print part of the structure for inspection
+        # Step 3: Load the uploaded JSON file
         json_data = json.load(uploaded_json_file)
-        
-        # Step 4: Display first 1000 characters of the JSON data for inspection
-        st.subheader("Preview of Uploaded JSON (IFS) Data")
-        st.text(json.dumps(json_data, indent=2)[:1000])  # Show first 1000 characters for inspection
 
-        # Step 5: Extract data from JSON based on the predefined mapping
+        # Step 4: Extract data from JSON based on the predefined mapping
         extracted_data = {}
-        
-        for label, json_key in FIELD_MAPPING.items():
-            if json_key:
-                # Safely access the nested JSON structure
-                extracted_data[label] = json_data.get('questions', {}).get(json_key, {}).get('answer', 'N/A')
-            else:
-                extracted_data[label] = 'N/A'  # No mapping available
 
-        # Filter out any fields with 'N/A'
-        extracted_data = {k: v for k, v in extracted_data.items() if v != 'N/A'}
+        for label, path in FIELD_MAPPING.items():
+            extracted_data[label] = extract_nested_data(json_data, path)
 
-        # Step 6: Create a DataFrame from the extracted data
+        # Step 5: Create a DataFrame from the extracted data
         extracted_df = pd.DataFrame(list(extracted_data.items()), columns=["Field", "Value"])
 
-        # Step 7: Display the DataFrame in Streamlit
+        # Step 6: Display the DataFrame in Streamlit
         st.title("Extracted Data from JSON (IFS)")
         st.write(extracted_df)
+
+        # Step 7: Function to convert DataFrame to Excel format in memory
+        def convert_df_to_excel(df):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False)
+            return output.getvalue()
+
+        # Convert DataFrame to Excel for download
+        excel_data = convert_df_to_excel(extracted_df)
+
+        # Step 8: Provide option to download the extracted data as Excel
+        st.download_button(
+            label="Download as Excel",
+            data=excel_data,
+            file_name="extracted_data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
     except json.JSONDecodeError:
         st.error("Error decoding the JSON file. Please ensure it is in the correct format.")

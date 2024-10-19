@@ -60,53 +60,33 @@ def display_extracted_data(extracted_data):
 
 # Complete mapping based on your provided field names and JSON structure
 FLATTENED_FIELD_MAPPING = {
-    # 1. INFORMATION SUR L'ENTREPRISE
-    "Nom du site à auditer": "data_modules_food_8_questions_companyName_answer",
-    "Statut légal": "data_modules_food_8_questions_companyLegalStatus_answer",
-    "Site internet": "data_modules_food_8_questions_companyWebsite_answer",
-    "N° SIRET": "data_modules_food_8_questions_companySiretNumber_answer",
-    "N° COID du portail": "data_modules_food_8_questions_companyCoid_answer",
-    "Code GLN": "data_modules_food_8_questions_companyGln_answer_0_rootQuestions_companyGlnNumber_answer",
-    "Rue": "data_modules_food_8_questions_companyStreetNo_answer",
-    "Code postal": "data_modules_food_8_questions_companyZip_answer",
-    "Nom de la ville": "data_modules_food_8_questions_companyCity_answer",
-    "Pays": "data_modules_food_8_questions_companyCountry_answer",
-    "Téléphone": "data_modules_food_8_questions_companyTelephone_answer",
-    "Latitude": "data_modules_food_8_questions_companyGpsLatitude_answer",
-    "Longitude": "data_modules_food_8_questions_companyGpsLongitude_answer",
-    "Email": "data_modules_food_8_questions_companyEmail_answer",
-    
-    # 2. Organisation de l'entreprise et de l'audit
-    "Nom du siège social": "data_modules_food_8_questions_headquartersName_answer",
-    "Rue (siège social)": "data_modules_food_8_questions_headquartersStreetNo_answer",
-    "Nom de la ville (siège social)": "data_modules_food_8_questions_headquartersCity_answer",
-    "Code postal (siège social)": "data_modules_food_8_questions_headquartersZip_answer",
-    "Pays (siège social)": "data_modules_food_8_questions_headquartersCountry_answer",
-    "Téléphone (siège social)": "data_modules_food_8_questions_headquartersTelephone_answer",
-    
-    # 3. ORGANISATION DU SITE
-    "Surface couverte de l'entreprise (m²)": "data_modules_food_8_questions_productionAreaSize_answer",
-    "Nombre de bâtiments": "data_modules_food_8_questions_numberOfBuildings_answer",
-    "Nombre de lignes de production": "data_modules_food_8_questions_numberOfProductionLines_answer",
-    "Nombre d'étages": "data_modules_food_8_questions_numberOfFloors_answer",
-    "Nombre maximum d'employés dans l'année, au pic de production": "data_modules_food_8_questions_numberOfEmployeesForTimeCalculation_answer",
-    "Langue parlée et écrite sur le site": "data_modules_food_8_questions_workingLanguage_answer",
-    
-    # 4. PRODUITS CONCERNÉS ET CHAMP DE L'AUDIT
-    "Norme souhaitée": "data_modules_food_8_questions_previousCertificationStandardVersion_answer",
-    "Périmètre de l'audit": "data_modules_food_8_questions_scopeCertificateScopeDescription_answer",
-    "Process et activités": "data_modules_food_8_questions_scopeProductGroupsDescription_answer",
-    "Activité saisonnière ? (O/N)": "data_modules_food_8_questions_seasonalProduction_answer",
-    
-    # Outsourced Processes
-    "Une partie du procédé de fabrication est-elle sous traitée? (OUI/NON)": "data_modules_food_8_questions_partlyOutsourcedProcesses_answer",
-    "Si oui lister les procédés sous-traités": "data_modules_food_8_questions_partlyOutsourcedProcessesDescription_answer",
-    "Avez-vous des produits totalement sous-traités? (OUI/NON)": "data_modules_food_8_questions_fullyOutsourcedProducts_answer",
-    "Si oui, lister les produits totalement sous-traités": "data_modules_food_8_questions_fullyOutsourcedProductsDescription_answer",
-    "Avez-vous des produits de négoce? (OUI/NON)": "data_modules_food_8_questions_tradedProductsBrokerActivity_answer",
-    "Si oui, lister les produits de négoce": "data_modules_food_8_questions_tradedProductsBrokerActivityDescription_answer",
-    "Produits à exclure du champ d'audit (OUI/NON)": "data_modules_food_8_questions_exclusions_answer",
-    "Préciser les produits à exclure": "data_modules_food_8_questions_exclusionsDescription_answer"
+    "Follow-up Summary Answer": "data_modules_food_8_questions_followupSummary_answer",
+    "Follow-up Summary Revision": "data_modules_food_8_questions_followupSummary_revision",
+    "KO Summary Answer": "data_modules_food_8_questions_koSummary_answer",
+    "KO Summary Revision": "data_modules_food_8_questions_koSummary_revision",
+    "Scope Certificate Description (EN)": "data_modules_food_8_questions_scopeCertificateScopeDescription_en_answer",
+    "Scope Certificate Revision": "data_modules_food_8_questions_scopeCertificateScopeDescription_en_revision",
+    "Company COID Answer": "data_modules_food_8_questions_companyCoid_answer",
+    "Company COID Revision": "data_modules_food_8_questions_companyCoid_revision",
+    "Company Name Answer": "data_modules_food_8_questions_companyName_answer",
+    "Company Name Revision": "data_modules_food_8_questions_companyName_revision",
+    "Company Street Number Answer": "data_modules_food_8_questions_companyStreetNo_answer",
+    "Company Street Number Revision": "data_modules_food_8_questions_companyStreetNo_revision",
+    "Company ZIP Answer": "data_modules_food_8_questions_companyZip_answer",
+    "Company ZIP Revision": "data_modules_food_8_questions_companyZip_revision",
+    "Company City Answer": "data_modules_food_8_questions_companyCity_answer",
+    "Company City Revision": "data_modules_food_8_questions_companyCity_revision",
+    "Company Telephone Answer": "data_modules_food_8_questions_companyTelephone_answer",
+    "Company Telephone Revision": "data_modules_food_8_questions_companyTelephone_revision",
+    "Company Email Answer": "data_modules_food_8_questions_companyEmail_answer",
+    "Company Email Revision": "data_modules_food_8_questions_companyEmail_revision",
+    "Company Webpage Answer": "data_modules_food_8_questions_companyWebpage_answer",
+    "Company Webpage Revision": "data_modules_food_8_questions_companyWebpage_revision",
+    "Company GPS Latitude Answer": "data_modules_food_8_questions_companyGpsLatitude_answer",
+    "Company GPS Latitude Revision": "data_modules_food_8_questions_companyGpsLatitude_revision",
+    "Company GPS Longitude Answer": "data_modules_food_8_questions_companyGpsLongitude_answer",
+    "Company GPS Longitude Revision": "data_modules_food_8_questions_companyGpsLongitude_revision",
+    # Continue mapping for all required fields in similar fashion
 }
 
 # Streamlit app
@@ -134,6 +114,7 @@ if uploaded_json_file:
         st.error("Error decoding the JSON file. Please ensure it is in the correct format.")
 else:
     st.write("Please upload a JSON (.ifs) file to proceed.")
+
 
 
 

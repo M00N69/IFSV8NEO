@@ -98,10 +98,10 @@ FLATTENED_FIELD_MAPPING = {
 }
 
 # Streamlit app
-st.title("IFS File Uploader and Data Extractor")
+st.title("IFS NEO Form Data Extractor")
 
 # Step 1: Upload the JSON (.ifs) file
-uploaded_json_file = st.file_uploader("Upload JSON (IFS) file", type="ifs")
+uploaded_json_file = st.file_uploader("Charger le fichier IFS de NEO", type="ifs")
 
 if uploaded_json_file:
     try:
@@ -124,12 +124,12 @@ if uploaded_json_file:
         df.to_excel(output, index=False)
         output.seek(0)
         
-        st.download_button(label="Download data as Excel", data=output, file_name='extracted_data.xlsx')
+        st.download_button(label="Télécharger le fichier Excel", data=output, file_name='extracted_data.xlsx')
 
     except json.JSONDecodeError:
         st.error("Error decoding the JSON file. Please ensure it is in the correct format.")
 else:
-    st.write("Please upload a JSON (.ifs) file to proceed.")
+    st.write(" Le fichier de NEO doit être un (.ifs) ")
 
 
 

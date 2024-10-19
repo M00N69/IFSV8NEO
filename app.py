@@ -3,71 +3,73 @@ import streamlit as st
 # Configuration de la page en mode large
 st.set_page_config(layout="wide")
 
+# Initialisation de l'état de la session pour suivre la navigation
+if "page" not in st.session_state:
+    st.session_state.page = "home"  # La page par défaut est la page d'accueil
+
+# Fonction pour changer de page
+def navigate_to_page(page):
+    st.session_state.page = page
+
 # Titre principal
 st.title("Extracteur de données du formulaire IFS NEO")
 
-# Ajouter les différentes versions du projet avec des explications
-st.subheader("Choisissez la version du projet")
-version_projet = st.radio(
-    "Sélectionnez la version du projet que vous souhaitez explorer :",
-    ('Rapport IFS V8 (ifsv8.py)', 'Extraction NEO (neoextract.py)')
-)
+# Si l'utilisateur est sur la page d'accueil
+if st.session_state.page == "home":
+    # Ajouter les différentes versions du projet avec des explications
+    st.subheader("Choisissez la version du projet")
+    version_projet = st.radio(
+        "Sélectionnez la version du projet que vous souhaitez explorer :",
+        ('Rapport IFS V8 (ifsv8.py)', 'Extraction NEO (neoextract.py)')
+    )
 
-# Expander pour expliquer le fonctionnement général
-with st.expander("Explication des fonctionnalités générales"):
-    st.write("""
-    Ce projet est conçu pour extraire des informations depuis des fichiers JSON issus des audits IFS. Il permet de dénormaliser les structures complexes de ces fichiers pour extraire des données spécifiques et les afficher sous forme de tableau.
-    Les deux versions de projet suivantes sont disponibles :
-    
-    - **Rapport IFS V8** : Cette version extrait des données spécifiques d'un fichier JSON lié à un audit IFS V8.
-    - **Extraction NEO** : Une version avancée avec des options supplémentaires pour filtrer et modifier les données extraites.
-    """)
-
-# Détail explicatif pour chaque version en fonction du choix de l'utilisateur
-if version_projet == 'Rapport IFS V8 (ifsv8.py)':
-    # Expander explicatif pour IFS V8
-    with st.expander("Explication des fonctionnalités de la version Rapport IFS V8"):
+    # Expander pour expliquer le fonctionnement général
+    with st.expander("Explication des fonctionnalités générales"):
         st.write("""
-        ### Rapport IFS V8 :
-        Cette version permet d'extraire des informations spécifiques du fichier JSON lié à un audit IFS V8, telles que :
-        - Nom du site audité
-        - N° COID du portail
-        - Code GLN
-        - Adresse, Ville, Pays, Code postal
-        - Informations sur les sous-traitances et exclusions de produits
+        Ce projet est conçu pour extraire des informations depuis des fichiers JSON issus des audits IFS. 
+        Les deux versions de projet suivantes sont disponibles :
         
-        **Fonctionnalités principales** :
-        - Chargement d'un fichier JSON IFS V8
-        - Extraction des données d'audit dans un tableau lisible
-        - Téléchargement des données extraites au format Excel
-        - Aucun traitement ou édition des données directement sur l'application
+        - **Rapport IFS V8** : Extraction des données spécifiques d'un fichier JSON lié à un audit IFS V8.
+        - **Extraction NEO** : Version avancée avec filtrage et modification des données extraites.
         """)
 
-    # Bouton pour naviguer vers la page IFS V8
-    if st.button("Aller à la version Rapport IFS V8"):
-        st.write("Redirection vers la version **Rapport IFS V8**...")
-        # Insérer le contenu de la page ifsv8.py ici
-        # Exemple : st.write(ifsv8_page_function())
-
-elif version_projet == 'Extraction NEO (neoextract.py)':
-    # Expander explicatif pour NEO Extract
-    with st.expander("Explication des fonctionnalités de la version Extraction NEO"):
-        st.write("""
-        ### Extraction NEO :
-        Cette version avancée permet d'extraire et de filtrer des données depuis les fichiers JSON liés aux audits IFS NEO. Voici ce que vous pouvez faire :
-        - Extraire des informations sur le site audité, les sous-traitances, produits exclus et bien plus.
-        - Filtrer les données selon des UUID et chapitres spécifiques pour une extraction plus ciblée.
-        - Modifier directement les données extraites avant de les télécharger sous forme de fichier Excel.
+    # Expander explicatif pour chaque version
+    if version_projet == 'Rapport IFS V8 (ifsv8.py)':
+        with st.expander("Explication des fonctionnalités de la version Rapport IFS V8"):
+            st.write("""
+            Cette version permet d'extraire des informations spécifiques du fichier JSON lié à un audit IFS V8, telles que le nom du site audité, 
+            le N° COID, l'adresse, etc. Vous pouvez également télécharger les données extraites sous forme de fichier Excel.
+            """)
         
-        **Fonctionnalités supplémentaires** :
-        - Filtrage des données selon les UUID et chapitres
-        - Possibilité de modifier les informations extraites
-        - Téléchargement des données modifiées
-        """)
+        # Bouton pour aller à la page IFS V8
+        if st.button("Aller à la version Rapport IFS V8"):
+            navigate_to_page("ifsv8")  # Redirige vers la page IFS V8
 
-    # Bouton pour naviguer vers la page NEO Extract
-    if st.button("Aller à la version Extraction NEO"):
-        st.write("Redirection vers la version **Extraction NEO**...")
-        # Insérer le contenu de la page neoextract.py ici
-        # Exemple : st.write(neoextract_page_function())
+    elif version_projet == 'Extraction NEO (neoextract.py)':
+        with st.expander("Explication des fonctionnalités de la version Extraction NEO"):
+            st.write("""
+            Cette version avancée permet d'extraire et de filtrer des données depuis les fichiers JSON liés aux audits IFS NEO, 
+            avec possibilité de modifier les données avant téléchargement.
+            """)
+        
+        # Bouton pour aller à la page NEO Extract
+        if st.button("Aller à la version Extraction NEO"):
+            navigate_to_page("neoextract")  # Redirige vers la page NEO Extract
 
+# Si l'utilisateur est sur la page IFS V8
+elif st.session_state.page == "ifsv8":
+    st.header("Rapport IFS V8")
+    st.write("Vous êtes sur la page du **Rapport IFS V8**.")
+    # Appel de la fonction ou inclusion du contenu spécifique à la version IFS V8
+    # Exemple : ifsv8_page_function()
+    if st.button("Retour à la page d'accueil"):
+        navigate_to_page("home")  # Retour à l'accueil
+
+# Si l'utilisateur est sur la page NEO Extract
+elif st.session_state.page == "neoextract":
+    st.header("Extraction NEO")
+    st.write("Vous êtes sur la page de **l'Extraction NEO**.")
+    # Appel de la fonction ou inclusion du contenu spécifique à la version NEO Extract
+    # Exemple : neoextract_page_function()
+    if st.button("Retour à la page d'accueil"):
+        navigate_to_page("home")  # Retour à l'accueil

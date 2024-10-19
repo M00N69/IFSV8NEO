@@ -123,7 +123,7 @@ FLATTENED_FIELD_MAPPING = {
 
 # Streamlit app
 st.sidebar.title("Menu de Navigation")
-option = st.sidebar.radio("Choisissez une option:", ["Extraction des données","Exigences de la checklist", "Modification des données, work in progress", "Exportation, work in progress", "Plan d'actions, work in progress"])
+option = st.sidebar.radio("Choisissez une option:", ["Extraction des données", "Exigences de la checklist", "Modification des données", "Exportation", "Plan d'actions"])
 
 st.title("IFS NEO Form Data Extractor")
 
@@ -169,12 +169,38 @@ if uploaded_json_file:
                     table_html += "</tbody></table>"
                     st.markdown(table_html, unsafe_allow_html=True)
 
-                # Step 6: Option to download the extracted data as an Excel file
+                # Step 6: Option to download the extracted data as an Excel file with formatting and COID in the name
                 df = pd.DataFrame(list(updated_data.items()), columns=["Field", "Value"])
+
+                # Extract the COID number to use in the file name
+                numero_coid = updated_data.get("N° COID du portail", "inconnu")
+
+                # Create the Excel file with column formatting
                 output = BytesIO()
-                df.to_excel(output, index=False)
+
+                # Create Excel writer and adjust column widths
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    df.to_excel(writer, index=False, sheet_name="Données extraites")
+                    
+                    # Access the worksheet to modify the formatting
+                    worksheet = writer.sheets["Données extraites"]
+                    
+                    # Adjust the width of each column based on the longest entry
+                    for col in worksheet.columns:
+                        max_length = max(len(str(cell.value)) for cell in col)
+                        col_letter = col[0].column_letter  # Get the column letter
+                        worksheet.column_dimensions[col_letter].width = max_length + 5  # Adjust column width
+
+                # Reset the position of the output to the start
                 output.seek(0)
-                st.download_button(label="Télécharger le fichier Excel", data=output, file_name='extracted_data.xlsx')
+
+                # Provide the download button with the COID number in the filename
+                st.download_button(
+                    label="Télécharger le fichier Excel",
+                    data=output,
+                    file_name=f'extraction_{numero_coid}.xlsx',
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
 
         elif option == "Exigences de la checklist":
             st.subheader("Exigences de la checklist")

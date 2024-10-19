@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import streamlit as st
+from io import BytesIO
 
 # Function to flatten the nested JSON structure
 def flatten_json_safe(nested_json, parent_key='', sep='_'):
@@ -119,8 +120,11 @@ if uploaded_json_file:
 
         # Step 6: Option to download the extracted data as an Excel file
         df = pd.DataFrame(list(extracted_data.items()), columns=["Field", "Value"])
-        excel_file = df.to_excel(index=False, encoding='utf-8')
-        st.download_button(label="Download data as Excel", data=excel_file, file_name='extracted_data.xlsx')
+        output = BytesIO()
+        df.to_excel(output, index=False)
+        output.seek(0)
+        
+        st.download_button(label="Download data as Excel", data=output, file_name='extracted_data.xlsx')
 
     except json.JSONDecodeError:
         st.error("Error decoding the JSON file. Please ensure it is in the correct format.")

@@ -123,7 +123,7 @@ FLATTENED_FIELD_MAPPING = {
 
 # Streamlit app
 st.sidebar.title("Menu de Navigation")
-option = st.sidebar.radio("Choisissez une option:", ["Extraction des données", "Exigences de la checklist", "Modification des données", "Exportation", "Plan d'actions"])
+option = st.sidebar.radio("Choisissez une option:", ["Extraction des données", "Exigences de la checklist", "Modification des données EN PROJET", "Exportation EN PROJET", "Plan d'actions EN PROJET"])
 
 st.title("IFS NEO Form Data Extractor")
 

@@ -108,6 +108,8 @@ FLATTENED_FIELD_MAPPING = {
     "Nombre de lignes de production": "data_modules_food_8_questions_numberOfProductionLines_answer",
     "Nombre d'étages": "data_modules_food_8_questions_numberOfFloors_answer",
     "Nombre maximum d'employés dans l'année, au pic de production": "data_modules_food_8_questions_numberOfEmployeesForTimeCalculation_answer",
+    "Commentaires employés": "data_modules_food_8_questions_numberOfEmployeesDescription_answer",
+    "Comment employees": "data_modules_food_8_questions_numberOfEmployeesDescription_en_answer",
     "Structures décentralisées": "data_modules_food_8_questions_companyStructureDecentralisedDescription_answer",
     "Fonctions centralisées": "data_modules_food_8_questions_companyStructureMultiLocationProductionDescription_answer",
     "Langue parlée et écrite sur le site": "data_modules_food_8_questions_workingLanguage_answer",

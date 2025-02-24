@@ -108,6 +108,9 @@ if uploaded_json_file:
             # Convert to DataFrame for Excel export
             df = pd.DataFrame(checklist_requirements)
 
+            # Ensure the 'Num' column is of type string
+            df['Num'] = df['Num'].astype(str)
+
             # Create the Excel file with column formatting
             output = BytesIO()
 
@@ -127,7 +130,7 @@ if uploaded_json_file:
                         cell.alignment = cell.alignment.copy(wrapText=True)
 
                 # Filter and write the "CO" sheet
-                df_co = df[df['Num'].str.contains('*')]
+                df_co = df[df['Num'].str.contains('*', na=False)]
                 df_co.to_excel(writer, index=False, sheet_name="CO")
                 worksheet_co = writer.sheets["CO"]
                 worksheet_co.column_dimensions['B'].width = 50

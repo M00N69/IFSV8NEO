@@ -22,36 +22,6 @@ def flatten_json_safe(nested_json, parent_key='', sep='_'):
         items.append((parent_key, nested_json))
     return dict(items)
 
-# Function to extract data from the flattened JSON
-def extract_from_flattened(flattened_data, mapping, selected_fields):
-    extracted_data = {}
-    for label, flat_path in mapping.items():
-        if label in selected_fields:
-            extracted_data[label] = flattened_data.get(flat_path, 'N/A')
-    return extracted_data
-
-# Custom CSS for the table display
-def apply_table_css():
-    st.markdown(
-        """
-        <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #f9f9f9;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        </style>
-        """, unsafe_allow_html=True
-    )
-
 # Load the CSV mapping for UUIDs corresponding to NUM from a URL
 def load_uuid_mapping_from_url(url):
     response = requests.get(url)
@@ -79,51 +49,6 @@ def load_uuid_mapping_from_url(url):
 UUID_MAPPING_URL = "https://raw.githubusercontent.com/M00N69/Gemini-Knowledge/refs/heads/main/IFSV8listUUID.csv"
 
 UUID_MAPPING_DF = load_uuid_mapping_from_url(UUID_MAPPING_URL)
-
-# Complete mapping based on your provided field names and JSON structure
-FLATTENED_FIELD_MAPPING = {
-    "Nom du site à auditer": "data_modules_food_8_questions_companyName_answer",
-    "N° COID du portail": "data_modules_food_8_questions_companyCoid_answer",
-    "Code GLN": "data_modules_food_8_questions_companyGln_answer_0_rootQuestions_companyGlnNumber_answer",
-    "Rue": "data_modules_food_8_questions_companyStreetNo_answer",
-    "Code postal": "data_modules_food_8_questions_companyZip_answer",
-    "Nom de la ville": "data_modules_food_8_questions_companyCity_answer",
-    "Pays": "data_modules_food_8_questions_companyCountry_answer",
-    "Téléphone": "data_modules_food_8_questions_companyTelephone_answer",
-    "Latitude": "data_modules_food_8_questions_companyGpsLatitude_answer",
-    "Longitude": "data_modules_food_8_questions_companyGpsLongitude_answer",
-    "Email": "data_modules_food_8_questions_companyEmail_answer",
-    "Nom du siège social": "data_modules_food_8_questions_headquartersName_answer",
-    "Rue (siège social)": "data_modules_food_8_questions_headquartersStreetNo_answer",
-    "Nom de la ville (siège social)": "data_modules_food_8_questions_headquartersCity_answer",
-    "Code postal (siège social)": "data_modules_food_8_questions_headquartersZip_answer",
-    "Pays (siège social)": "data_modules_food_8_questions_headquartersCountry_answer",
-    "Téléphone (siège social)": "data_modules_food_8_questions_headquartersTelephone_answer",
-    "Code GLN": "data_modules_food_8_questions_companyGln_answer_0_rootQuestions_companyGlnNumber_answer",
-    "Surface couverte de l'entreprise (m²)": "data_modules_food_8_questions_productionAreaSize_answer",
-    "Nombre de bâtiments": "data_modules_food_8_questions_numberOfBuildings_answer",
-    "Nombre de lignes de production": "data_modules_food_8_questions_numberOfProductionLines_answer",
-    "Nombre d'étages": "data_modules_food_8_questions_numberOfFloors_answer",
-    "Nombre maximum d'employés dans l'année, au pic de production": "data_modules_food_8_questions_numberOfEmployeesForTimeCalculation_answer",
-    "Commentaires employés": "data_modules_food_8_questions_numberOfEmployeesDescription_answer",
-    "Comment employees": "data_modules_food_8_questions_numberOfEmployeesDescription_en_answer",
-    "Structures décentralisées": "data_modules_food_8_questions_companyStructureDecentralisedDescription_answer",
-    "Fonctions centralisées": "data_modules_food_8_questions_companyStructureMultiLocationProductionDescription_answer",
-    "Langue parlée et écrite sur le site": "data_modules_food_8_questions_workingLanguage_answer",
-    "Langue du système qualité": "data_modules_food_8_questions_qmsLanguage_answer_0",
-    "Audit scope EN": "data_modules_food_8_questions_scopeCertificateScopeDescription_en_answer",
-    "Périmètre de l'audit FR": "data_modules_food_8_questions_scopeAuditScopeDescription_answer",
-    "Process et activités": "data_modules_food_8_questions_scopeProductGroupsDescription_answer",
-    "Activité saisonnière ? (O/N)": "data_modules_food_8_questions_seasonalProduction_answer",
-    "Une partie du procédé de fabrication est-elle sous traitée? (OUI/NON)": "data_modules_food_8_questions_partlyOutsourcedProcesses_answer",
-    "Si oui lister les procédés sous-traités": "data_modules_food_8_questions_partlyOutsourcedProcessesDescription_answer",
-    "Avez-vous des produits totalement sous-traités? (OUI/NON)": "data_modules_food_8_questions_fullyOutsourcedProducts_answer",
-    "Si oui, lister les produits totalement sous-traités": "data_modules_food_8_questions_fullyOutsourcedProductsDescription_answer",
-    "Avez-vous des produits de négoce? (OUI/NON)": "data_modules_food_8_questions_tradedProductsBrokerActivity_answer",
-    "Si oui, lister les produits de négoce": "data_modules_food_8_questions_tradedProductsBrokerActivityDescription_answer",
-    "Produits à exclure du champ d'audit (OUI/NON)": "data_modules_food_8_questions_exclusions_answer",
-    "Préciser les produits à exclure": "data_modules_food_8_questions_exclusionsDescription_answer"
-}
 
 # Streamlit app
 st.title("IFS NEO Form Data Extractor")
@@ -172,13 +97,11 @@ if uploaded_json_file:
                 explanation_text = flattened_json_data_safe.get(f"{prefix}_answers_englishExplanationText", "N/A")
                 detailed_explanation = flattened_json_data_safe.get(f"{prefix}_answers_explanationText", "N/A")
                 score_label = flattened_json_data_safe.get(f"{prefix}_score_label", "N/A")
-                response = flattened_json_data_safe.get(f"{prefix}_answers_fieldAnswers", "N/A")
                 checklist_requirements.append({
                     "Num": key,
                     "Explanation": explanation_text,
                     "Detailed Explanation": detailed_explanation,
                     "Score": score_label,
-                    "Response": response,
                     "Commentaire": ""
                 })
 
@@ -195,11 +118,14 @@ if uploaded_json_file:
                 # Access the worksheet to modify the formatting
                 worksheet = writer.sheets["Exigences de la checklist"]
 
-                # Adjust the width of each column based on the longest entry
-                for col in worksheet.columns:
-                    max_length = max(len(str(cell.value)) for cell in col)
-                    col_letter = col[0].column_letter  # Get the column letter
-                    worksheet.column_dimensions[col_letter].width = max_length + 5  # Adjust column width
+                # Adjust the width of specific columns and enable text wrapping
+                worksheet.column_dimensions['B'].width = 50
+                worksheet.column_dimensions['C'].width = 50
+                worksheet.column_dimensions['F'].width = 50
+
+                for col in ['B', 'C', 'F']:
+                    for cell in worksheet[col]:
+                        cell.alignment = cell.alignment.copy(wrapText=True)
 
             # Reset the position of the output to the start
             output.seek(0)

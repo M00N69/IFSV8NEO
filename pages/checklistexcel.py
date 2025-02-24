@@ -113,18 +113,53 @@ if uploaded_json_file:
 
             # Create Excel writer and adjust column widths
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                # Write the main sheet
                 df.to_excel(writer, index=False, sheet_name="Exigences de la checklist")
 
                 # Access the worksheet to modify the formatting
                 worksheet = writer.sheets["Exigences de la checklist"]
-
-                # Adjust the width of specific columns and enable text wrapping
                 worksheet.column_dimensions['B'].width = 50
                 worksheet.column_dimensions['C'].width = 50
                 worksheet.column_dimensions['F'].width = 50
 
                 for col in ['B', 'C', 'F']:
                     for cell in worksheet[col]:
+                        cell.alignment = cell.alignment.copy(wrapText=True)
+
+                # Filter and write the "CO" sheet
+                df_co = df[df['Num'].str.contains('*')]
+                df_co.to_excel(writer, index=False, sheet_name="CO")
+                worksheet_co = writer.sheets["CO"]
+                worksheet_co.column_dimensions['B'].width = 50
+                worksheet_co.column_dimensions['C'].width = 50
+                worksheet_co.column_dimensions['F'].width = 50
+
+                for col in ['B', 'C', 'F']:
+                    for cell in worksheet_co[col]:
+                        cell.alignment = cell.alignment.copy(wrapText=True)
+
+                # Filter and write the "NA" sheet
+                df_na = df[df['Score'] == "NA"]
+                df_na.to_excel(writer, index=False, sheet_name="NA")
+                worksheet_na = writer.sheets["NA"]
+                worksheet_na.column_dimensions['B'].width = 50
+                worksheet_na.column_dimensions['C'].width = 50
+                worksheet_na.column_dimensions['F'].width = 50
+
+                for col in ['B', 'C', 'F']:
+                    for cell in worksheet_na[col]:
+                        cell.alignment = cell.alignment.copy(wrapText=True)
+
+                # Filter and write the "Plan d'action" sheet
+                df_plan_action = df[(df['Score'] != "A") & (df['Score'] != "NA")]
+                df_plan_action.to_excel(writer, index=False, sheet_name="Plan d'action")
+                worksheet_plan_action = writer.sheets["Plan d'action"]
+                worksheet_plan_action.column_dimensions['B'].width = 50
+                worksheet_plan_action.column_dimensions['C'].width = 50
+                worksheet_plan_action.column_dimensions['F'].width = 50
+
+                for col in ['B', 'C', 'F']:
+                    for cell in worksheet_plan_action[col]:
                         cell.alignment = cell.alignment.copy(wrapText=True)
 
             # Reset the position of the output to the start

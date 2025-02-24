@@ -130,7 +130,7 @@ if uploaded_json_file:
                         cell.alignment = cell.alignment.copy(wrapText=True)
 
                 # Filter and write the "CO" sheet
-                df_co = df[df['Num'].str.contains('*', na=False)]
+                df_co = df[df['Num'].str.contains(r'\*', na=False, regex=True)]
                 df_co.to_excel(writer, index=False, sheet_name="CO")
                 worksheet_co = writer.sheets["CO"]
                 worksheet_co.column_dimensions['B'].width = 50
